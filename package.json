@@ -1,0 +1,29 @@
+{
+  "name": "anycardgame_serverbased",
+  "version": "0.0.0",
+  "description": "Game-agnostic online card game table. Cards not included.",
+  "main": "\"\"",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xlf1024/anycardgame_serverbased.git"
+  },
+  "author": "xlf1024",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/xlf1024/anycardgame_serverbased/issues"
+  },
+  "homepage": "https://github.com/xlf1024/anycardgame_serverbased#readme",
+  "devDependencies": {
+    "hammerjs": "git+https://github.com/xlf1024/hammer.js.git",
+    "parcel": "^1.12.4"
+  },
+  "dependencies": {
+    "ws": "^7.2.5"
+  },
+  "scripts":{
+    "build": "parcel build client/src/index.html -d client/dist/"
+  }
+}
