@@ -4,7 +4,7 @@
   "description": "Game-agnostic online card game table. Cards not included.",
   "main": "\"\"",
   "scripts": {
-    "build": "rm -r client/dist/ && parcel build client/src/index.html -d client/dist/ --public-url ./ --no-minify"
+    "build": "rm -r -v client/dist/ && parcel build client/src/index.html -d client/dist/ --public-url ./ --no-minify --log-level 4"
   },
   "repository": {
     "type": "git",

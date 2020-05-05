@@ -3208,8 +3208,7 @@ var tableHammer = new _hammerjs.default(table, {
 var view = {
   x: 0,
   y: 0,
-  width: 200,
-  height: 200,
+  zoom: 200,
   dx: 0,
   dy: 0,
   dzoom: 1,
@@ -3218,7 +3217,7 @@ var view = {
 };
 
 function updateView() {
-  table.setAttribute("viewBox", "".concat(view.x + view.dx - 0.5 * view.width * view.dzoom, " ").concat(view.y + view.dy - 0.5 * view.height * view.dzoom, " ").concat(view.width * view.dzoom, " ").concat(view.height * view.dzoom));
+  table.setAttribute("viewBox", "".concat(view.x + view.dx - 0.5 * view.zoom * view.dzoom, " ").concat(view.y + view.dy - 0.5 * view.zoom * view.dzoom, " ").concat(view.zoom * view.dzoom, " ").concat(view.zoom * view.dzoom));
   table.setAttribute("transform", "rotate(".concat(view.alpha + view.dalpha, ")"));
 }
 
@@ -3243,8 +3242,7 @@ tableHammer.on("pinchmove", function (evt) {
   updateView();
 });
 tableHammer.on("pinchend", function (evt) {
-  view.width *= view.dzoom;
-  view.height *= view.dzoom;
+  view.zoom *= view.dzoom;
   view.dzoom = 1;
 });
 tableHammer.on("rotatemove", function (evt) {
@@ -3255,5 +3253,61 @@ tableHammer.on("rotateend", function (evt) {
   view.alpha += view.dalpha;
   view.dalpha = 0;
 });
+table.addEventListener("wheel", function (evt) {
+  if (evt.altKey) return;
+  var factor;
+
+  switch (evt.deltaMode) {
+    case 0:
+      {
+        factor = 1;
+        break;
+      }
+
+    case 1:
+      {
+        factor = 16;
+        break;
+      }
+
+    case 2:
+      {
+        factor = window.clientHeight;
+      }
+  }
+
+  var dx, dy, dz;
+
+  if (evt.ctrlKey) {
+    var _ref = [evt.deltaZ, evt.deltaX, evt.deltaY];
+    dx = _ref[0];
+    dy = _ref[1];
+    dz = _ref[2];
+  } else if (evt.shiftKey) {
+    var _ref2 = [evt.deltaY, evt.deltaZ, evt.deltaX];
+    dx = _ref2[0];
+    dy = _ref2[1];
+    dz = _ref2[2];
+  } else {
+    var _ref3 = [evt.deltaX, evt.deltaY, evt.deltaZ];
+    dx = _ref3[0];
+    dy = _ref3[1];
+    dz = _ref3[2];
+  }
+
+  var _coordinateTransform$ = _coordinateTransform.default.distance.screenToSvg(table, dx * factor, dy * factor),
+      x = _coordinateTransform$.x,
+      y = _coordinateTransform$.y;
+
+  view.x += x;
+  view.y += y;
+  view.zoom *= Math.exp(dz * factor / 512);
+  updateView(); //console.log({evt, factor, dx, dy, dz});
+
+  evt.preventDefault();
+}, {
+  capture: true,
+  passive: false
+});
 },{"@egjs/hammerjs":"FZpF","./coordinateTransform.js":"HjbV"}]},{},["mpVp"], null)
-//# sourceMappingURL=script.1421bf1a.js.map
+//# sourceMappingURL=script.39f200fc.js.map

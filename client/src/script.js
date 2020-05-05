@@ -1,3 +1,4 @@
+"use strict";
 import Hammer from "@egjs/hammerjs";
 import coordinateTransform from "./coordinateTransform.js";
 
@@ -14,8 +15,7 @@ let tableHammer = new Hammer(table,{
 let view = {
 	x:0,
 	y:0,
-	width: 200,
-	height: 200,
+	zoom: 200,
 	dx:0,
 	dy:0,
 	dzoom: 1,
@@ -23,7 +23,7 @@ let view = {
 	dalpha:0
 }
 function updateView(){
-	table.setAttribute("viewBox", `${view.x + view.dx - 0.5*view.width*view.dzoom} ${view.y + view.dy - 0.5*view.height*view.dzoom} ${view.width*view.dzoom} ${view.height*view.dzoom}`);
+	table.setAttribute("viewBox", `${view.x + view.dx - 0.5*view.zoom*view.dzoom} ${view.y + view.dy - 0.5*view.zoom*view.dzoom} ${view.zoom*view.dzoom} ${view.zoom*view.dzoom}`);
 	table.setAttribute("transform", `rotate(${view.alpha + view.dalpha})`);
 }
 updateView();
@@ -47,8 +47,7 @@ tableHammer.on("pinchmove", evt=>{
 	updateView();
 });
 tableHammer.on("pinchend", evt=>{
-	view.width *= view.dzoom;
-	view.height *= view.dzoom;
+	view.zoom *= view.dzoom;
 	view.dzoom = 1;
 });
 tableHammer.on("rotatemove", evt=>{
@@ -59,3 +58,40 @@ tableHammer.on("rotateend",evt=>{
 	view.alpha += view.dalpha;
 	view.dalpha = 0;
 })
+table.addEventListener("wheel",evt=>{
+	if(evt.altKey) return;
+	
+	let factor;
+	switch(evt.deltaMode){
+		case 0:{
+			factor = 1;
+			break;
+		}
+		case 1:{
+			factor = 16;
+			break;
+		}
+		case 2:{
+			factor = window.clientHeight;
+		}
+	}
+	
+	let dx, dy, dz;
+	if(evt.ctrlKey){
+		[dx,dy,dz]=[evt.deltaZ,evt.deltaX,evt.deltaY];
+	}else if(evt.shiftKey){
+		[dx,dy,dz]=[evt.deltaY,evt.deltaZ,evt.deltaX];
+	}else{
+		[dx,dy,dz]=[evt.deltaX,evt.deltaY,evt.deltaZ];
+	}
+	let {x,y}=coordinateTransform.distance.screenToSvg(table, dx*factor,dy*factor);
+	view.x += x;
+	view.y += y;
+	view.zoom *= Math.exp(dz*factor/512);
+	updateView();
+	//console.log({evt, factor, dx, dy, dz});
+	evt.preventDefault();
+}, {capture:true, passive:false})
+
+
+
