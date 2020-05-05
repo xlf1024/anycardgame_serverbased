@@ -3254,7 +3254,6 @@ tableHammer.on("rotateend", function (evt) {
   view.dalpha = 0;
 });
 table.addEventListener("wheel", function (evt) {
-  if (evt.altKey) return;
   var factor;
 
   switch (evt.deltaMode) {
@@ -3274,6 +3273,14 @@ table.addEventListener("wheel", function (evt) {
       {
         factor = window.clientHeight;
       }
+  }
+
+  if (evt.altKey) {
+    view.alpha += evt.deltaY * factor / 256; //console.log({evt,view,factor});
+
+    updateView();
+    evt.preventDefault();
+    return;
   }
 
   var dx, dy, dz;
@@ -3310,4 +3317,4 @@ table.addEventListener("wheel", function (evt) {
   passive: false
 });
 },{"@egjs/hammerjs":"FZpF","./coordinateTransform.js":"HjbV"}]},{},["mpVp"], null)
-//# sourceMappingURL=script.39f200fc.js.map
+//# sourceMappingURL=script.d44fadbd.js.map

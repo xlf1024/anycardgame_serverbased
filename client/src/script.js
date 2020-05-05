@@ -59,7 +59,6 @@ tableHammer.on("rotateend",evt=>{
 	view.dalpha = 0;
 })
 table.addEventListener("wheel",evt=>{
-	if(evt.altKey) return;
 	
 	let factor;
 	switch(evt.deltaMode){
@@ -76,6 +75,13 @@ table.addEventListener("wheel",evt=>{
 		}
 	}
 	
+	if(evt.altKey){
+		view.alpha += evt.deltaY * factor / 256;
+		//console.log({evt,view,factor});
+		updateView();
+		evt.preventDefault();
+		return;
+	}
 	let dx, dy, dz;
 	if(evt.ctrlKey){
 		[dx,dy,dz]=[evt.deltaZ,evt.deltaX,evt.deltaY];
