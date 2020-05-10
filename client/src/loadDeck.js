@@ -33,21 +33,22 @@ export async function loadDeckFromZip(source){
 	return deck;
 }
 async function loadCard(columns, replacements){
+	columns.forEach(column => replacements[column] = replacements[column] || "");
 	const [front, back] = await Promise.all([
 		loadFace(replacements.$frontImage, replacements.$frontTemplate, columns, replacements),
 		loadFace(replacements.$backImage, replacements.$backTemplate, columns, replacements)
 	]);
-	return new CardDescription(front, back, replacements.$width, replacements.$height);
+	return new CardDescription(front.URL, front.type, back.URL, back.type, replacements.$width, replacements.$height, replacements);
 }
-async function loadFace(image, template, columns, replacements){ // retuns the card face as a blob URL
-	if(image) return image;
+async function loadFace(image, template, replacements){ // retuns the card face as a blob URL
+	if(image) return {URL: image, type:"image"};
 	if(template){
 		let templateString = await fetch(template).then(res => res.text()); //fetch from blob url;
-		columns.forEach(column =>{
+		for (let column in replacements){
 			templateString = templateString.split("{{"+column+"}}").join(replacements[column]||"");
-		});
-		return URL.createObjectURL(new Blob([templateString]));
+		}
+		return {URL:URL.createObjectURL(new Blob([templateString])),type:"template"};
 	}
 	return failedFace;
 }
-const failedFace = URL.createObjectURL(new Blob(["neither image nor template were specified."]));
+const failedFace = {URL:URL.createObjectURL(new Blob(["neither image nor template were specified."])), type:"template"};

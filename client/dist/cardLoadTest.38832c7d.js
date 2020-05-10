@@ -17203,7 +17203,7 @@ function _classPrivateFieldGet(receiver, privateMap) { var descriptor = privateM
 function _classPrivateFieldSet(receiver, privateMap, value) { var descriptor = privateMap.get(receiver); if (!descriptor) { throw new TypeError("attempted to set private field on non-instance"); } if (descriptor.set) { descriptor.set.call(receiver, value); } else { if (!descriptor.writable) { throw new TypeError("attempted to set read only private field"); } descriptor.value = value; } return value; }
 
 class CardDescription {
-  constructor(front, back, width, height) {
+  constructor(frontURL, frontType, backURL, backType, width, height, properties) {
     _width.set(this, {
       writable: true,
       value: void 0
@@ -17224,13 +17224,22 @@ class CardDescription {
       value: void 0
     });
 
-    _classPrivateFieldSet(this, _width, width);
+    _properties.set(this, {
+      writable: true,
+      value: void 0
+    });
 
-    _classPrivateFieldSet(this, _height, height);
+    _classPrivateFieldSet(this, _width, Number(width));
 
-    _classPrivateFieldSet(this, _front, new CardFaceDescription(front, this));
+    _classPrivateFieldSet(this, _height, Number(height));
 
-    _classPrivateFieldSet(this, _back, new CardFaceDescription(back, this));
+    _classPrivateFieldSet(this, _properties, Object.freeze(properties));
+
+    _classPrivateFieldSet(this, _front, new CardFaceDescription(frontURL, frontType, this));
+
+    _classPrivateFieldSet(this, _back, new CardFaceDescription(backURL, backType, this));
+
+    console.log(this);
   }
 
   get width() {
@@ -17249,6 +17258,10 @@ class CardDescription {
     return _classPrivateFieldGet(this, _back);
   }
 
+  get properties() {
+    return _classPrivateFieldGet(this, _properties);
+  }
+
 }
 
 exports.CardDescription = CardDescription;
@@ -17261,8 +17274,10 @@ var _front = new WeakMap();
 
 var _back = new WeakMap();
 
+var _properties = new WeakMap();
+
 class CardFaceDescription {
-  constructor(src, card) {
+  constructor(src, type, card) {
     _src.set(this, {
       writable: true,
       value: void 0
@@ -17273,9 +17288,24 @@ class CardFaceDescription {
       value: void 0
     });
 
+    _type.set(this, {
+      writable: true,
+      value: void 0
+    });
+
     _classPrivateFieldSet(this, _src, src);
 
     _classPrivateFieldSet(this, _card, card);
+
+    _classPrivateFieldSet(this, _type, type);
+  }
+
+  forSVG() {
+    return _classPrivateFieldGet(this, _type) === "image" ? this.toSVGImageElement() : this.toForeignObject();
+  }
+
+  forHTML() {
+    return _classPrivateFieldGet(this, _type) === "image" ? this.toHTMLImgElement() : this.toIFrame();
   }
 
   toSVGImageElement() {
@@ -17286,10 +17316,19 @@ class CardFaceDescription {
     return imageEl;
   }
 
+  toHTMLImgElement() {
+    //untested
+    let imgEl = document.createElement("img");
+    imgEl.setAttribute("src", _classPrivateFieldGet(this, _src));
+    imgEl.setAttribute("width", _classPrivateFieldGet(this, _card).width);
+    imgEl.setAttribute("height", _classPrivateFieldGet(this, _card).height);
+    return imgEl;
+  }
+
   toForeignObject() {
     let foreignObject = document.createElementNS(_namespaces.SVGNS, "foreignObject");
-    foreignObject.setAttribute("width", _classPrivateFieldGet(this, _card).width);
-    foreignObject.setAttribute("height", _classPrivateFieldGet(this, _card).height);
+    foreignObject.setAttribute("width", _classPrivateFieldGet(this, _card).width.toString());
+    foreignObject.setAttribute("height", _classPrivateFieldGet(this, _card).height.toString());
     foreignObject.appendChild(this.toIFrame());
     return foreignObject;
   }
@@ -17312,6 +17351,8 @@ class CardFaceDescription {
 var _src = new WeakMap();
 
 var _card = new WeakMap();
+
+var _type = new WeakMap();
 },{"./namespaces.js":"ASQA"}],"Ld0F":[function(require,module,exports) {
 "use strict";
 
@@ -17355,27 +17396,38 @@ async function loadDeckFromZip(source) {
 }
 
 async function loadCard(columns, replacements) {
+  columns.forEach(column => replacements[column] = replacements[column] || "");
   const [front, back] = await Promise.all([loadFace(replacements.$frontImage, replacements.$frontTemplate, columns, replacements), loadFace(replacements.$backImage, replacements.$backTemplate, columns, replacements)]);
-  return new _CardDescription.CardDescription(front, back, replacements.$width, replacements.$height);
+  return new _CardDescription.CardDescription(front.URL, front.type, back.URL, back.type, replacements.$width, replacements.$height, replacements);
 }
 
-async function loadFace(image, template, columns, replacements) {
+async function loadFace(image, template, replacements) {
   // retuns the card face as a blob URL
-  if (image) return image;
+  if (image) return {
+    URL: image,
+    type: "image"
+  };
 
   if (template) {
     let templateString = await fetch(template).then(res => res.text()); //fetch from blob url;
 
-    columns.forEach(column => {
+    for (let column in replacements) {
       templateString = templateString.split("{{" + column + "}}").join(replacements[column] || "");
-    });
-    return URL.createObjectURL(new Blob([templateString]));
+    }
+
+    return {
+      URL: URL.createObjectURL(new Blob([templateString])),
+      type: "template"
+    };
   }
 
   return failedFace;
 }
 
-const failedFace = URL.createObjectURL(new Blob(["neither image nor template were specified."]));
+const failedFace = {
+  URL: URL.createObjectURL(new Blob(["neither image nor template were specified."])),
+  type: "template"
+};
 },{"jszip":"zl0j","papaparse":"g2Wo","./CardDescription.js":"JTA7"}],"ckwZ":[function(require,module,exports) {
 "use strict";
 
@@ -17392,11 +17444,11 @@ fileinput.addEventListener("change", evt => {
       let svg = document.createElementNS(_namespaces.SVGNS, "svg");
       svg.setAttribute("viewBox", `0 0 ${2 * card.width} ${card.height}`);
       svg.style.width = 2 * card.width + "mm";
-      let front = card.front.toForeignObject();
+      let front = card.front.forSVG();
       front.setAttribute("x", 0);
       front.setAttribute("y", 0);
       svg.appendChild(front);
-      let back = card.back.toForeignObject();
+      let back = card.back.forSVG();
       back.setAttribute("x", card.width);
       back.setAttribute("y", 0);
       svg.appendChild(back);
@@ -17405,4 +17457,4 @@ fileinput.addEventListener("change", evt => {
   });
 });
 },{"./namespaces.js":"ASQA","./loadDeck.js":"Ld0F"}]},{},["ckwZ"], null)
-//# sourceMappingURL=cardLoadTest.88b8f470.js.map
+//# sourceMappingURL=cardLoadTest.38832c7d.js.map

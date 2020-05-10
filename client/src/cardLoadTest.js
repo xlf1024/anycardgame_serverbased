@@ -11,11 +11,11 @@ fileinput.addEventListener("change",evt=>{
 				let svg = document.createElementNS(SVGNS, "svg");
 				svg.setAttribute("viewBox", `0 0 ${2*card.width} ${card.height}`);
 				svg.style.width = 2*card.width + "mm";
-				let front = card.front.toForeignObject();
+				let front = card.front.forSVG();
 				front.setAttribute("x", 0);
 				front.setAttribute("y", 0);
 				svg.appendChild(front);
-				let back = card.back.toForeignObject();
+				let back = card.back.forSVG();
 				back.setAttribute("x", card.width);
 				back.setAttribute("y", 0);
 				svg.appendChild(back);
