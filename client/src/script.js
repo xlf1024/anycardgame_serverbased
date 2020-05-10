@@ -5,6 +5,7 @@ import coordinateTransform from "./coordinateTransform.js";
 const SVGNS = "http://www.w3.org/2000/svg";
 
 let table = document.getElementsByClassName("table")[0];//Parcel or PostHTML seem to strip the id attribute on <svg>
+let background = document.getElementById("background");
 let tableHammer = new Hammer(table,{
 	recognizers:[
 		[Hammer.Rotate, {threshold:5}],
@@ -25,6 +26,10 @@ let view = {
 function updateView(){
 	table.setAttribute("viewBox", `${view.x + view.dx - 0.5*view.zoom*view.dzoom} ${view.y + view.dy - 0.5*view.zoom*view.dzoom} ${view.zoom*view.dzoom} ${view.zoom*view.dzoom}`);
 	table.setAttribute("transform", `rotate(${view.alpha + view.dalpha})`);
+	background.setAttribute("x", view.x + view.dx - 0.5*view.zoom*view.dzoom);
+	background.setAttribute("y", view.y + view.dy - 0.5*view.zoom*view.dzoom);
+	background.setAttribute("width", view.zoom*view.dzoom);
+	background.setAttribute("height", view.zoom*view.dzoom);
 }
 updateView();
 tableHammer.on("panmove", evt=>{
@@ -76,7 +81,7 @@ table.addEventListener("wheel",evt=>{
 	}
 	
 	if(evt.altKey){
-		view.alpha += evt.deltaY * factor / 256;
+		view.alpha += evt.deltaY * factor / 8;
 		//console.log({evt,view,factor});
 		updateView();
 		evt.preventDefault();

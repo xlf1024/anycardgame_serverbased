@@ -3166,23 +3166,25 @@ Object.defineProperty(exports, "__esModule", {
 exports.default = void 0;
 var _default = {
   point: {
-    screenToSvg: function screenToSvg(svg, x, y) {
-      var screenPoint = new DOMPoint(x, y);
-      var svgToScreenMatrix = DOMMatrix.fromMatrix(svg.getScreenCTM());
-      var screenToSvgMatrix = svgToScreenMatrix.inverse();
+    screenToSvg(svg, x, y) {
+      let screenPoint = new DOMPoint(x, y);
+      let svgToScreenMatrix = DOMMatrix.fromMatrix(svg.getScreenCTM());
+      let screenToSvgMatrix = svgToScreenMatrix.inverse();
       return screenToSvgMatrix.transformPoint(screenPoint);
     }
+
   },
   distance: {
-    screenToSvg: function screenToSvg(svg, x, y) {
-      var screenOrigin = new DOMPoint(0, 0);
-      var screenVec = new DOMPoint(x, y);
-      var svgToScreenMatrix = DOMMatrix.fromMatrix(svg.getScreenCTM());
-      var screenToSvgMatrix = svgToScreenMatrix.inverse();
-      var svgOffset = screenToSvgMatrix.transformPoint(screenOrigin);
-      var svgPoint = screenToSvgMatrix.transformPoint(screenVec);
+    screenToSvg(svg, x, y) {
+      let screenOrigin = new DOMPoint(0, 0);
+      let screenVec = new DOMPoint(x, y);
+      let svgToScreenMatrix = DOMMatrix.fromMatrix(svg.getScreenCTM());
+      let screenToSvgMatrix = svgToScreenMatrix.inverse();
+      let svgOffset = screenToSvgMatrix.transformPoint(screenOrigin);
+      let svgPoint = screenToSvgMatrix.transformPoint(screenVec);
       return new DOMPoint(svgPoint.x - svgOffset.x, svgPoint.y - svgOffset.y);
     }
+
   }
 };
 exports.default = _default;
@@ -3195,17 +3197,18 @@ var _coordinateTransform = _interopRequireDefault(require("./coordinateTransform
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var SVGNS = "http://www.w3.org/2000/svg";
-var table = document.getElementsByClassName("table")[0]; //Parcel or PostHTML seem to strip the id attribute on <svg>
+const SVGNS = "http://www.w3.org/2000/svg";
+let table = document.getElementsByClassName("table")[0]; //Parcel or PostHTML seem to strip the id attribute on <svg>
 
-var tableHammer = new _hammerjs.default(table, {
+let background = document.getElementById("background");
+let tableHammer = new _hammerjs.default(table, {
   recognizers: [[_hammerjs.default.Rotate, {
     threshold: 5
   }], [_hammerjs.default.Pinch, {
     threshold: 0.1
   }, [], ["rotate"]], [_hammerjs.default.Pan, {}, [], ["pinch", "rotate"]]]
 });
-var view = {
+let view = {
   x: 0,
   y: 0,
   zoom: 200,
@@ -3217,44 +3220,48 @@ var view = {
 };
 
 function updateView() {
-  table.setAttribute("viewBox", "".concat(view.x + view.dx - 0.5 * view.zoom * view.dzoom, " ").concat(view.y + view.dy - 0.5 * view.zoom * view.dzoom, " ").concat(view.zoom * view.dzoom, " ").concat(view.zoom * view.dzoom));
-  table.setAttribute("transform", "rotate(".concat(view.alpha + view.dalpha, ")"));
+  table.setAttribute("viewBox", `${view.x + view.dx - 0.5 * view.zoom * view.dzoom} ${view.y + view.dy - 0.5 * view.zoom * view.dzoom} ${view.zoom * view.dzoom} ${view.zoom * view.dzoom}`);
+  table.setAttribute("transform", `rotate(${view.alpha + view.dalpha})`);
+  background.setAttribute("x", view.x + view.dx - 0.5 * view.zoom * view.dzoom);
+  background.setAttribute("y", view.y + view.dy - 0.5 * view.zoom * view.dzoom);
+  background.setAttribute("width", view.zoom * view.dzoom);
+  background.setAttribute("height", view.zoom * view.dzoom);
 }
 
 updateView();
-tableHammer.on("panmove", function (evt) {
+tableHammer.on("panmove", evt => {
   //console.log({evt});
-  var svgDeltaVec = _coordinateTransform.default.distance.screenToSvg(table, evt.deltaX, evt.deltaY);
+  let svgDeltaVec = _coordinateTransform.default.distance.screenToSvg(table, evt.deltaX, evt.deltaY);
 
   view.dx = -svgDeltaVec.x;
   view.dy = -svgDeltaVec.y;
   updateView(); //console.log({screenToSvgMatrix, screenOrigin, offset, screenDeltaVec, svgDeltaVec});
 });
-tableHammer.on("panend", function (evt) {
+tableHammer.on("panend", evt => {
   view.x += view.dx;
   view.y += view.dy;
   view.dx = 0;
   view.dy = 0;
 });
-tableHammer.on("pinchmove", function (evt) {
+tableHammer.on("pinchmove", evt => {
   //console.log(evt);
   view.dzoom = 1 / evt.scale;
   updateView();
 });
-tableHammer.on("pinchend", function (evt) {
+tableHammer.on("pinchend", evt => {
   view.zoom *= view.dzoom;
   view.dzoom = 1;
 });
-tableHammer.on("rotatemove", function (evt) {
+tableHammer.on("rotatemove", evt => {
   view.dalpha = evt.rotation;
   updateView();
 });
-tableHammer.on("rotateend", function (evt) {
+tableHammer.on("rotateend", evt => {
   view.alpha += view.dalpha;
   view.dalpha = 0;
 });
-table.addEventListener("wheel", function (evt) {
-  var factor;
+table.addEventListener("wheel", evt => {
+  let factor;
 
   switch (evt.deltaMode) {
     case 0:
@@ -3276,35 +3283,27 @@ table.addEventListener("wheel", function (evt) {
   }
 
   if (evt.altKey) {
-    view.alpha += evt.deltaY * factor / 256; //console.log({evt,view,factor});
+    view.alpha += evt.deltaY * factor / 8; //console.log({evt,view,factor});
 
     updateView();
     evt.preventDefault();
     return;
   }
 
-  var dx, dy, dz;
+  let dx, dy, dz;
 
   if (evt.ctrlKey) {
-    var _ref = [evt.deltaZ, evt.deltaX, evt.deltaY];
-    dx = _ref[0];
-    dy = _ref[1];
-    dz = _ref[2];
+    [dx, dy, dz] = [evt.deltaZ, evt.deltaX, evt.deltaY];
   } else if (evt.shiftKey) {
-    var _ref2 = [evt.deltaY, evt.deltaZ, evt.deltaX];
-    dx = _ref2[0];
-    dy = _ref2[1];
-    dz = _ref2[2];
+    [dx, dy, dz] = [evt.deltaY, evt.deltaZ, evt.deltaX];
   } else {
-    var _ref3 = [evt.deltaX, evt.deltaY, evt.deltaZ];
-    dx = _ref3[0];
-    dy = _ref3[1];
-    dz = _ref3[2];
+    [dx, dy, dz] = [evt.deltaX, evt.deltaY, evt.deltaZ];
   }
 
-  var _coordinateTransform$ = _coordinateTransform.default.distance.screenToSvg(table, dx * factor, dy * factor),
-      x = _coordinateTransform$.x,
-      y = _coordinateTransform$.y;
+  let {
+    x,
+    y
+  } = _coordinateTransform.default.distance.screenToSvg(table, dx * factor, dy * factor);
 
   view.x += x;
   view.y += y;
@@ -3317,4 +3316,4 @@ table.addEventListener("wheel", function (evt) {
   passive: false
 });
 },{"@egjs/hammerjs":"FZpF","./coordinateTransform.js":"HjbV"}]},{},["mpVp"], null)
-//# sourceMappingURL=script.d44fadbd.js.map
+//# sourceMappingURL=script.a064da54.js.map

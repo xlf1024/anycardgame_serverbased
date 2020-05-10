@@ -4,7 +4,7 @@
   "description": "Game-agnostic online card game table. Cards not included.",
   "main": "\"\"",
   "scripts": {
-    "build": "rm -r -v client/dist/ && parcel build client/src/index.html -d client/dist/ --public-url ./ --no-minify --log-level 4"
+    "build": "rm -r -v client/dist/ && parcel build client/src/index.html client/src/cardLoadTest.html -d client/dist/ --public-url ./ --no-minify --log-level 4"
   },
   "repository": {
     "type": "git",
@@ -17,10 +17,15 @@
   },
   "homepage": "https://github.com/xlf1024/anycardgame_serverbased#readme",
   "devDependencies": {
+    "@babel/core": "^7.9.6",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
     "@egjs/hammerjs": "git+https://github.com/xlf1024/hammer.js.git",
+    "jszip": "^3.4.0",
+    "papaparse": "^5.2.0",
     "parcel": "^1.12.4"
   },
   "dependencies": {
     "ws": "^7.2.5"
-  }
+  },
+  "browserslist": ["last 1 Firefox versions"]
 }
