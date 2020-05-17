@@ -17353,7 +17353,204 @@ var _src = new WeakMap();
 var _card = new WeakMap();
 
 var _type = new WeakMap();
-},{"./namespaces.js":"ASQA"}],"Ld0F":[function(require,module,exports) {
+},{"./namespaces.js":"ASQA"}],"gvbc":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.CardInstance = void 0;
+
+function _classPrivateFieldGet(receiver, privateMap) { var descriptor = privateMap.get(receiver); if (!descriptor) { throw new TypeError("attempted to get private field on non-instance"); } if (descriptor.get) { return descriptor.get.call(receiver); } return descriptor.value; }
+
+function _classPrivateFieldSet(receiver, privateMap, value) { var descriptor = privateMap.get(receiver); if (!descriptor) { throw new TypeError("attempted to set private field on non-instance"); } if (descriptor.set) { descriptor.set.call(receiver, value); } else { if (!descriptor.writable) { throw new TypeError("attempted to set read only private field"); } descriptor.value = value; } return value; }
+
+class CardInstance {
+  constructor(description) {
+    _description.set(this, {
+      writable: true,
+      value: void 0
+    });
+
+    _open.set(this, {
+      writable: true,
+      value: false
+    });
+
+    _classPrivateFieldSet(this, _description, description);
+  }
+
+  flip() {
+    _classPrivateFieldSet(this, _open, !_classPrivateFieldGet(this, _open));
+  }
+
+  getOpenFace() {
+    return _classPrivateFieldGet(this, _open) ? _classPrivateFieldGet(this, _description).front : _classPrivateFieldGet(this, _description).back;
+  }
+
+  getCoveredFace() {
+    return !_classPrivateFieldGet(this, _open) ? _classPrivateFieldGet(this, _description).front : _classPrivateFieldGet(this, _description).back;
+  }
+
+  get description() {
+    return _classPrivateFieldGet(this, _description);
+  }
+
+  get open() {
+    return _classPrivateFieldGet(this, _open);
+  }
+
+}
+
+exports.CardInstance = CardInstance;
+
+var _description = new WeakMap();
+
+var _open = new WeakMap();
+},{}],"aWYP":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.shuffle = shuffle;
+exports.randInt = randInt;
+
+//Fisher-Yates shuffle, https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle#The_modern_algorithm
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    let j = randInt(0, i + 1);
+    [array[i], array[j]] = [array[j], array[i]]; //swap
+  }
+}
+
+function randInt(lower, upper) {
+  //lower <= randInt < upper
+  return Math.floor(Math.random() * (upper - lower) + lower);
+}
+},{}],"RvrM":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.CardStack = void 0;
+
+var _shuffle = require("./shuffle.js");
+
+function _classPrivateFieldGet(receiver, privateMap) { var descriptor = privateMap.get(receiver); if (!descriptor) { throw new TypeError("attempted to get private field on non-instance"); } if (descriptor.get) { return descriptor.get.call(receiver); } return descriptor.value; }
+
+function _classPrivateFieldSet(receiver, privateMap, value) { var descriptor = privateMap.get(receiver); if (!descriptor) { throw new TypeError("attempted to set private field on non-instance"); } if (descriptor.set) { descriptor.set.call(receiver, value); } else { if (!descriptor.writable) { throw new TypeError("attempted to set read only private field"); } descriptor.value = value; } return value; }
+
+class CardStack {
+  constructor(cards) {
+    _cards.set(this, {
+      writable: true,
+      value: void 0
+    });
+
+    _classPrivateFieldSet(this, _cards, cards);
+  }
+
+  get cards() {
+    return _classPrivateFieldGet(this, _cards);
+  }
+
+  get size() {
+    return _classPrivateFieldGet(this, _cards).length;
+  }
+
+  shuffle() {
+    _classPrivateFieldSet(this, _cards, (0, _shuffle.shuffle)(_classPrivateFieldGet(this, _cards)));
+  }
+
+  reverse() {
+    _classPrivateFieldGet(this, _cards).reverse();
+  }
+
+  flip() {
+    this.reverse();
+
+    _classPrivateFieldGet(this, _cards).forEach(card => card.flip());
+  }
+
+  insertBottom(stack) {
+    _classPrivateFieldGet(this, _cards).push(...stack.cards);
+  }
+
+  insertTop(stack) {
+    _classPrivateFieldGet(this, _cards).unshift(...stack.cards);
+  }
+
+  insertMiddle(stack) {
+    _classPrivateFieldGet(this, _cards).splice((0, _shuffle.randInt)(0, _classPrivateFieldGet(this, _cards).length), 0, ...stack.cards);
+  }
+
+  takeBottom(count = 1) {
+    return new CardStack(_classPrivateFieldGet(this, _cards).splice(-count, count));
+  }
+
+  takeTop(count = 1) {
+    return new CardStack(_classPrivateFieldGet(this, _cards).splice(0, count));
+  }
+
+  takeMiddle(count = 1) {
+    return new CardStack(_classPrivateFieldGet(this, _cards).splice((0, _shuffle.randInt)(0, _classPrivateFieldGet(this, _cards).length - count), count));
+  }
+
+}
+
+exports.CardStack = CardStack;
+
+var _cards = new WeakMap();
+},{"./shuffle.js":"aWYP"}],"gHo7":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DeckDescription = void 0;
+
+var _CardInstance = require("./CardInstance.js");
+
+var _CardStack = require("./CardStack.js");
+
+function _classPrivateFieldGet(receiver, privateMap) { var descriptor = privateMap.get(receiver); if (!descriptor) { throw new TypeError("attempted to get private field on non-instance"); } if (descriptor.get) { return descriptor.get.call(receiver); } return descriptor.value; }
+
+function _classPrivateFieldSet(receiver, privateMap, value) { var descriptor = privateMap.get(receiver); if (!descriptor) { throw new TypeError("attempted to set private field on non-instance"); } if (descriptor.set) { descriptor.set.call(receiver, value); } else { if (!descriptor.writable) { throw new TypeError("attempted to set read only private field"); } descriptor.value = value; } return value; }
+
+class DeckDescription {
+  constructor(cards) {
+    _cards.set(this, {
+      writable: true,
+      value: []
+    });
+
+    _classPrivateFieldSet(this, _cards, cards);
+  }
+
+  get cards() {
+    return _classPrivateFieldGet(this, _cards);
+  }
+
+  createStack() {
+    let cardInstances = [];
+
+    _classPrivateFieldGet(this, _cards).forEach(card => {
+      for (let i = 0; i < card.count; i++) {
+        cardInstances.push(new _CardInstance.CardInstance(card));
+      }
+    });
+
+    return new _CardStack.CardStack(cardInstances);
+  }
+
+}
+
+exports.DeckDescription = DeckDescription;
+
+var _cards = new WeakMap();
+},{"./CardInstance.js":"gvbc","./CardStack.js":"RvrM"}],"Ld0F":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17366,6 +17563,8 @@ var _jszip = _interopRequireDefault(require("jszip"));
 var _papaparse = _interopRequireDefault(require("papaparse"));
 
 var _CardDescription = require("./CardDescription.js");
+
+var _DeckDescription = require("./DeckDescription.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -17391,13 +17590,13 @@ async function loadDeckFromZip(source) {
     }
   });
 
-  let deck = await Promise.all(cardTable.data.map(row => loadCard(cardTable.meta.fields, row)));
-  return deck;
+  let cards = await Promise.all(cardTable.data.map(row => loadCard(cardTable.meta.fields, row)));
+  return new _DeckDescription.DeckDescription(cards);
 }
 
 async function loadCard(columns, replacements) {
   columns.forEach(column => replacements[column] = replacements[column] || "");
-  const [front, back] = await Promise.all([loadFace(replacements.$frontImage, replacements.$frontTemplate, columns, replacements), loadFace(replacements.$backImage, replacements.$backTemplate, columns, replacements)]);
+  const [front, back] = await Promise.all([loadFace(replacements.$frontImage, replacements.$frontTemplate, replacements), loadFace(replacements.$backImage, replacements.$backTemplate, replacements)]);
   return new _CardDescription.CardDescription(front.URL, front.type, back.URL, back.type, replacements.$width, replacements.$height, replacements);
 }
 
@@ -17428,7 +17627,7 @@ const failedFace = {
   URL: URL.createObjectURL(new Blob(["neither image nor template were specified."])),
   type: "template"
 };
-},{"jszip":"zl0j","papaparse":"g2Wo","./CardDescription.js":"JTA7"}],"ckwZ":[function(require,module,exports) {
+},{"jszip":"zl0j","papaparse":"g2Wo","./CardDescription.js":"JTA7","./DeckDescription.js":"gHo7"}],"ckwZ":[function(require,module,exports) {
 "use strict";
 
 var _namespaces = require("./namespaces.js");
@@ -17440,7 +17639,7 @@ let fileinput = document.getElementById("fileinput");
 fileinput.addEventListener("change", evt => {
   (0, _loadDeck.loadDeckFromZip)(evt.target.files[0]).then(deck => {
     window.deck = deck;
-    deck.forEach(card => {
+    deck.cards.forEach(card => {
       let svg = document.createElementNS(_namespaces.SVGNS, "svg");
       svg.setAttribute("viewBox", `0 0 ${2 * card.width} ${card.height}`);
       svg.style.width = 2 * card.width + "mm";
@@ -17457,4 +17656,4 @@ fileinput.addEventListener("change", evt => {
   });
 });
 },{"./namespaces.js":"ASQA","./loadDeck.js":"Ld0F"}]},{},["ckwZ"], null)
-//# sourceMappingURL=cardLoadTest.38832c7d.js.map
+//# sourceMappingURL=cardLoadTest.f8bcfde5.js.map

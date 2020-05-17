@@ -7,7 +7,7 @@ fileinput.addEventListener("change",evt=>{
 	loadDeckFromZip(evt.target.files[0])
 		.then(deck=>{
 			window.deck = deck;
-			deck.forEach(card=>{
+			deck.cards.forEach(card=>{
 				let svg = document.createElementNS(SVGNS, "svg");
 				svg.setAttribute("viewBox", `0 0 ${2*card.width} ${card.height}`);
 				svg.style.width = 2*card.width + "mm";

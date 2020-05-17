@@ -1,6 +1,7 @@
 import JSZip from "jszip";
 import Papaparse from "papaparse";
-import {CardDescription} from "./CardDescription.js"
+import {CardDescription} from "./CardDescription.js";
+import {DeckDescription} from "./DeckDescription.js";
 
 export async function loadDeckFromZip(source){
 	let zip = new JSZip();
@@ -28,15 +29,15 @@ export async function loadDeckFromZip(source){
 			return cellt in fileBlobs ? fileBlobs[cellt] : cell;
 		}
 	});
-	let deck = await Promise.all(cardTable.data.map(row => loadCard(cardTable.meta.fields, row)));
+	let cards = await Promise.all(cardTable.data.map(row => loadCard(cardTable.meta.fields, row)));
 	
-	return deck;
+	return new DeckDescription(cards);
 }
 async function loadCard(columns, replacements){
 	columns.forEach(column => replacements[column] = replacements[column] || "");
 	const [front, back] = await Promise.all([
-		loadFace(replacements.$frontImage, replacements.$frontTemplate, columns, replacements),
-		loadFace(replacements.$backImage, replacements.$backTemplate, columns, replacements)
+		loadFace(replacements.$frontImage, replacements.$frontTemplate, replacements),
+		loadFace(replacements.$backImage, replacements.$backTemplate, replacements)
 	]);
 	return new CardDescription(front.URL, front.type, back.URL, back.type, replacements.$width, replacements.$height, replacements);
 }
