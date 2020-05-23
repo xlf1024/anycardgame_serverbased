@@ -42,10 +42,10 @@ class CardFaceDescription{
 		this.#type = type;
 	}
 	forSVG(){
-		return this.#type === "image" ? this.toSVGImageElement() : this.toForeignObject();
+		return this.#type === "html" ? this.toForeignObject() : this.toSVGImageElement();
 	}
 	forHTML(){
-		return this.#type === "image" ? this.toHTMLImgElement() : this.toIFrame();
+		return this.#type === "html" ? this.toIFrame() : this.toHTMLImgElement();
 	}
 	toSVGImageElement(){
 		let imageEl = document.createElementNS(SVGNS, "image");
@@ -74,7 +74,7 @@ class CardFaceDescription{
 		iframe.setAttribute("height", this.#card.height);
 		iframe.setAttribute("src", this.#src);
 		iframe.setAttribute("referrerpolicy", "no-referrer")
-		iframe.setAttribute("sandbox", "");
+		iframe.setAttribute("sandbox", "allow-same-origin");
 		iframe.setAttribute("csp", "default-src blob: data:")
 		iframe.style.pointerEvents="none";
 		iframe.style.border="none";

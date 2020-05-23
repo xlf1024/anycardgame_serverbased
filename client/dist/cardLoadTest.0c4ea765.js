@@ -17301,11 +17301,11 @@ class CardFaceDescription {
   }
 
   forSVG() {
-    return _classPrivateFieldGet(this, _type) === "image" ? this.toSVGImageElement() : this.toForeignObject();
+    return _classPrivateFieldGet(this, _type) === "html" ? this.toForeignObject() : this.toSVGImageElement();
   }
 
   forHTML() {
-    return _classPrivateFieldGet(this, _type) === "image" ? this.toHTMLImgElement() : this.toIFrame();
+    return _classPrivateFieldGet(this, _type) === "html" ? this.toIFrame() : this.toHTMLImgElement();
   }
 
   toSVGImageElement() {
@@ -17339,7 +17339,7 @@ class CardFaceDescription {
     iframe.setAttribute("height", _classPrivateFieldGet(this, _card).height);
     iframe.setAttribute("src", _classPrivateFieldGet(this, _src));
     iframe.setAttribute("referrerpolicy", "no-referrer");
-    iframe.setAttribute("sandbox", "");
+    iframe.setAttribute("sandbox", "allow-same-origin");
     iframe.setAttribute("csp", "default-src blob: data:");
     iframe.style.pointerEvents = "none";
     iframe.style.border = "none";
@@ -17596,11 +17596,11 @@ async function loadDeckFromZip(source) {
 
 async function loadCard(columns, replacements) {
   columns.forEach(column => replacements[column] = replacements[column] || "");
-  const [front, back] = await Promise.all([loadFace(replacements.$frontImage, replacements.$frontTemplate, replacements), loadFace(replacements.$backImage, replacements.$backTemplate, replacements)]);
+  const [front, back] = await Promise.all([loadFace(replacements.$frontImage, replacements.$frontTemplate, replacements.$frontType, replacements), loadFace(replacements.$backImage, replacements.$backTemplate, replacements.$backType, replacements)]);
   return new _CardDescription.CardDescription(front.URL, front.type, back.URL, back.type, replacements.$width, replacements.$height, replacements);
 }
 
-async function loadFace(image, template, replacements) {
+async function loadFace(image, template, type, replacements) {
   // retuns the card face as a blob URL
   if (image) return {
     URL: image,
@@ -17616,7 +17616,7 @@ async function loadFace(image, template, replacements) {
 
     return {
       URL: URL.createObjectURL(new Blob([templateString])),
-      type: "template"
+      type: type || "image"
     };
   }
 
@@ -17656,4 +17656,4 @@ fileinput.addEventListener("change", evt => {
   });
 });
 },{"./namespaces.js":"ASQA","./loadDeck.js":"Ld0F"}]},{},["ckwZ"], null)
-//# sourceMappingURL=cardLoadTest.f8bcfde5.js.map
+//# sourceMappingURL=cardLoadTest.0c4ea765.js.map

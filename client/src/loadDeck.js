@@ -36,19 +36,19 @@ export async function loadDeckFromZip(source){
 async function loadCard(columns, replacements){
 	columns.forEach(column => replacements[column] = replacements[column] || "");
 	const [front, back] = await Promise.all([
-		loadFace(replacements.$frontImage, replacements.$frontTemplate, replacements),
-		loadFace(replacements.$backImage, replacements.$backTemplate, replacements)
+		loadFace(replacements.$frontImage, replacements.$frontTemplate, replacements.$frontType, replacements),
+		loadFace(replacements.$backImage, replacements.$backTemplate, replacements.$backType, replacements)
 	]);
 	return new CardDescription(front.URL, front.type, back.URL, back.type, replacements.$width, replacements.$height, replacements);
 }
-async function loadFace(image, template, replacements){ // retuns the card face as a blob URL
+async function loadFace(image, template, type, replacements){ // retuns the card face as a blob URL
 	if(image) return {URL: image, type:"image"};
 	if(template){
 		let templateString = await fetch(template).then(res => res.text()); //fetch from blob url;
 		for (let column in replacements){
 			templateString = templateString.split("{{"+column+"}}").join(replacements[column]||"");
 		}
-		return {URL:URL.createObjectURL(new Blob([templateString])),type:"template"};
+		return {URL:URL.createObjectURL(new Blob([templateString])), type: type || "image"};
 	}
 	return failedFace;
 }
