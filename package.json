@@ -3,8 +3,9 @@
   "version": "0.0.0",
   "description": "Game-agnostic online card game table. Cards not included.",
   "main": "\"\"",
+  "type":"module",
   "scripts": {
-    "build": "rm -r -v client/dist/ && parcel build client/src/index.html client/src/cardLoadTest.html -d client/dist/ --public-url ./ --no-minify --log-level 4"
+    "build": "rm -r -v client/dist/ && parcel build client/src/index.html client/src/cardLoadTest.html -d client/dist/ --public-url /client/dist/ --no-minify --log-level 4"
   },
   "repository": {
     "type": "git",
@@ -25,7 +26,11 @@
     "parcel": "^1.12.4"
   },
   "dependencies": {
+    "node-static": "^0.7.11",
+    "uuid": "^8.1.0",
     "ws": "^7.2.5"
   },
-  "browserslist": ["last 1 Firefox versions"]
+  "browserslist": [
+    "last 1 Firefox versions"
+  ]
 }

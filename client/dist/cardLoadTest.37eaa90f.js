@@ -17311,8 +17311,10 @@ class CardFaceDescription {
   toSVGImageElement() {
     let imageEl = document.createElementNS(_namespaces.SVGNS, "image");
     imageEl.setAttribute("href", _classPrivateFieldGet(this, _src));
-    imageEl.setAttribute("width", _classPrivateFieldGet(this, _card).width);
-    imageEl.setAttribute("height", _classPrivateFieldGet(this, _card).height);
+    imageEl.setAttribute("width", _classPrivateFieldGet(this, _card).width.toString());
+    imageEl.setAttribute("height", _classPrivateFieldGet(this, _card).height.toString());
+    imageEl.setAttribute("x", (-0.5 * _classPrivateFieldGet(this, _card).height).toString());
+    imageEl.setAttribute("y", (-0.5 * _classPrivateFieldGet(this, _card).width).toString());
     return imageEl;
   }
 
@@ -17329,6 +17331,8 @@ class CardFaceDescription {
     let foreignObject = document.createElementNS(_namespaces.SVGNS, "foreignObject");
     foreignObject.setAttribute("width", _classPrivateFieldGet(this, _card).width.toString());
     foreignObject.setAttribute("height", _classPrivateFieldGet(this, _card).height.toString());
+    foreignObject.setAttribute("y", (-0.5 * _classPrivateFieldGet(this, _card).height).toString());
+    foreignObject.setAttribute("x", (-0.5 * _classPrivateFieldGet(this, _card).width).toString());
     foreignObject.appendChild(this.toIFrame());
     return foreignObject;
   }
@@ -17353,157 +17357,7 @@ var _src = new WeakMap();
 var _card = new WeakMap();
 
 var _type = new WeakMap();
-},{"./namespaces.js":"ASQA"}],"gvbc":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.CardInstance = void 0;
-
-function _classPrivateFieldGet(receiver, privateMap) { var descriptor = privateMap.get(receiver); if (!descriptor) { throw new TypeError("attempted to get private field on non-instance"); } if (descriptor.get) { return descriptor.get.call(receiver); } return descriptor.value; }
-
-function _classPrivateFieldSet(receiver, privateMap, value) { var descriptor = privateMap.get(receiver); if (!descriptor) { throw new TypeError("attempted to set private field on non-instance"); } if (descriptor.set) { descriptor.set.call(receiver, value); } else { if (!descriptor.writable) { throw new TypeError("attempted to set read only private field"); } descriptor.value = value; } return value; }
-
-class CardInstance {
-  constructor(description) {
-    _description.set(this, {
-      writable: true,
-      value: void 0
-    });
-
-    _open.set(this, {
-      writable: true,
-      value: false
-    });
-
-    _classPrivateFieldSet(this, _description, description);
-  }
-
-  flip() {
-    _classPrivateFieldSet(this, _open, !_classPrivateFieldGet(this, _open));
-  }
-
-  getOpenFace() {
-    return _classPrivateFieldGet(this, _open) ? _classPrivateFieldGet(this, _description).front : _classPrivateFieldGet(this, _description).back;
-  }
-
-  getCoveredFace() {
-    return !_classPrivateFieldGet(this, _open) ? _classPrivateFieldGet(this, _description).front : _classPrivateFieldGet(this, _description).back;
-  }
-
-  get description() {
-    return _classPrivateFieldGet(this, _description);
-  }
-
-  get open() {
-    return _classPrivateFieldGet(this, _open);
-  }
-
-}
-
-exports.CardInstance = CardInstance;
-
-var _description = new WeakMap();
-
-var _open = new WeakMap();
-},{}],"aWYP":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.shuffle = shuffle;
-exports.randInt = randInt;
-
-//Fisher-Yates shuffle, https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle#The_modern_algorithm
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    let j = randInt(0, i + 1);
-    [array[i], array[j]] = [array[j], array[i]]; //swap
-  }
-}
-
-function randInt(lower, upper) {
-  //lower <= randInt < upper
-  return Math.floor(Math.random() * (upper - lower) + lower);
-}
-},{}],"RvrM":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.CardStack = void 0;
-
-var _shuffle = require("./shuffle.js");
-
-function _classPrivateFieldGet(receiver, privateMap) { var descriptor = privateMap.get(receiver); if (!descriptor) { throw new TypeError("attempted to get private field on non-instance"); } if (descriptor.get) { return descriptor.get.call(receiver); } return descriptor.value; }
-
-function _classPrivateFieldSet(receiver, privateMap, value) { var descriptor = privateMap.get(receiver); if (!descriptor) { throw new TypeError("attempted to set private field on non-instance"); } if (descriptor.set) { descriptor.set.call(receiver, value); } else { if (!descriptor.writable) { throw new TypeError("attempted to set read only private field"); } descriptor.value = value; } return value; }
-
-class CardStack {
-  constructor(cards) {
-    _cards.set(this, {
-      writable: true,
-      value: void 0
-    });
-
-    _classPrivateFieldSet(this, _cards, cards);
-  }
-
-  get cards() {
-    return _classPrivateFieldGet(this, _cards);
-  }
-
-  get size() {
-    return _classPrivateFieldGet(this, _cards).length;
-  }
-
-  shuffle() {
-    _classPrivateFieldSet(this, _cards, (0, _shuffle.shuffle)(_classPrivateFieldGet(this, _cards)));
-  }
-
-  reverse() {
-    _classPrivateFieldGet(this, _cards).reverse();
-  }
-
-  flip() {
-    this.reverse();
-
-    _classPrivateFieldGet(this, _cards).forEach(card => card.flip());
-  }
-
-  insertBottom(stack) {
-    _classPrivateFieldGet(this, _cards).push(...stack.cards);
-  }
-
-  insertTop(stack) {
-    _classPrivateFieldGet(this, _cards).unshift(...stack.cards);
-  }
-
-  insertMiddle(stack) {
-    _classPrivateFieldGet(this, _cards).splice((0, _shuffle.randInt)(0, _classPrivateFieldGet(this, _cards).length), 0, ...stack.cards);
-  }
-
-  takeBottom(count = 1) {
-    return new CardStack(_classPrivateFieldGet(this, _cards).splice(-count, count));
-  }
-
-  takeTop(count = 1) {
-    return new CardStack(_classPrivateFieldGet(this, _cards).splice(0, count));
-  }
-
-  takeMiddle(count = 1) {
-    return new CardStack(_classPrivateFieldGet(this, _cards).splice((0, _shuffle.randInt)(0, _classPrivateFieldGet(this, _cards).length - count), count));
-  }
-
-}
-
-exports.CardStack = CardStack;
-
-var _cards = new WeakMap();
-},{"./shuffle.js":"aWYP"}],"gHo7":[function(require,module,exports) {
+},{"./namespaces.js":"ASQA"}],"gHo7":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17511,38 +17365,48 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.DeckDescription = void 0;
 
-var _CardInstance = require("./CardInstance.js");
-
-var _CardStack = require("./CardStack.js");
-
 function _classPrivateFieldGet(receiver, privateMap) { var descriptor = privateMap.get(receiver); if (!descriptor) { throw new TypeError("attempted to get private field on non-instance"); } if (descriptor.get) { return descriptor.get.call(receiver); } return descriptor.value; }
 
 function _classPrivateFieldSet(receiver, privateMap, value) { var descriptor = privateMap.get(receiver); if (!descriptor) { throw new TypeError("attempted to set private field on non-instance"); } if (descriptor.set) { descriptor.set.call(receiver, value); } else { if (!descriptor.writable) { throw new TypeError("attempted to set read only private field"); } descriptor.value = value; } return value; }
 
 class DeckDescription {
-  constructor(cards) {
+  constructor(id, cards, blobs) {
     _cards.set(this, {
       writable: true,
       value: []
     });
 
+    _id.set(this, {
+      writable: true,
+      value: void 0
+    });
+
+    _blobs.set(this, {
+      writable: true,
+      value: []
+    });
+
     _classPrivateFieldSet(this, _cards, cards);
+
+    _classPrivateFieldSet(this, _id, id);
+
+    _classPrivateFieldSet(this, _blobs, blobs);
   }
 
   get cards() {
     return _classPrivateFieldGet(this, _cards);
   }
 
-  createStack() {
-    let cardInstances = [];
+  get id() {
+    return _classPrivateFieldGet(this, _id);
+  }
 
-    _classPrivateFieldGet(this, _cards).forEach(card => {
-      for (let i = 0; i < card.count; i++) {
-        cardInstances.push(new _CardInstance.CardInstance(card));
-      }
-    });
+  delete() {
+    _classPrivateFieldGet(this, _blobs).forEach(URL.revokeObjectURL);
 
-    return new _CardStack.CardStack(cardInstances);
+    _classPrivateFieldSet(this, _blobs, []);
+
+    _classPrivateFieldSet(this, _cards, []);
   }
 
 }
@@ -17550,7 +17414,11 @@ class DeckDescription {
 exports.DeckDescription = DeckDescription;
 
 var _cards = new WeakMap();
-},{"./CardInstance.js":"gvbc","./CardStack.js":"RvrM"}],"Ld0F":[function(require,module,exports) {
+
+var _id = new WeakMap();
+
+var _blobs = new WeakMap();
+},{}],"Ld0F":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17568,7 +17436,7 @@ var _DeckDescription = require("./DeckDescription.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-async function loadDeckFromZip(source) {
+async function loadDeckFromZip(id, source) {
   let zip = new _jszip.default();
   await zip.loadAsync(source);
   let fileBlobs = {};
@@ -17591,7 +17459,7 @@ async function loadDeckFromZip(source) {
   });
 
   let cards = await Promise.all(cardTable.data.map(row => loadCard(cardTable.meta.fields, row)));
-  return new _DeckDescription.DeckDescription(cards);
+  return new _DeckDescription.DeckDescription(id, cards, fileBlobs.values);
 }
 
 async function loadCard(columns, replacements) {
@@ -17656,4 +17524,4 @@ fileinput.addEventListener("change", evt => {
   });
 });
 },{"./namespaces.js":"ASQA","./loadDeck.js":"Ld0F"}]},{},["ckwZ"], null)
-//# sourceMappingURL=cardLoadTest.0c4ea765.js.map
+//# sourceMappingURL=cardLoadTest.37eaa90f.js.map

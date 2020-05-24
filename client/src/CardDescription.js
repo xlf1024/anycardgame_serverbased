@@ -50,8 +50,10 @@ class CardFaceDescription{
 	toSVGImageElement(){
 		let imageEl = document.createElementNS(SVGNS, "image");
 		imageEl.setAttribute("href", this.#src);
-		imageEl.setAttribute("width", this.#card.width);
-		imageEl.setAttribute("height", this.#card.height);
+		imageEl.setAttribute("width", this.#card.width.toString());
+		imageEl.setAttribute("height", this.#card.height.toString());
+		imageEl.setAttribute("x", (-0.5*this.#card.height).toString());
+		imageEl.setAttribute("y", (-0.5*this.#card.width).toString());
 		return imageEl;
 	}
 	toHTMLImgElement(){ //untested
@@ -65,6 +67,8 @@ class CardFaceDescription{
 		let foreignObject = document.createElementNS(SVGNS, "foreignObject");
 		foreignObject.setAttribute("width", this.#card.width.toString());
 		foreignObject.setAttribute("height", this.#card.height.toString());
+		foreignObject.setAttribute("y", (-0.5*this.#card.height).toString());
+		foreignObject.setAttribute("x", (-0.5*this.#card.width).toString());
 		foreignObject.appendChild(this.toIFrame());
 		return foreignObject;
 	}

@@ -1,23 +1,24 @@
-import {CardInstance} from "./CardInstance.js"
-import {CardStack} from "./CardStack.js"
-
 export class DeckDescription{
 	#cards = [];
+	#id;
+	#blobs = [];
 	
-	constructor(cards){
+	constructor(id, cards, blobs){
 		this.#cards = cards;
+		this.#id = id;
+		this.#blobs = blobs;
 	}
 	get cards(){
 		return this.#cards;
 	}
 	
-	createStack(){
-		let cardInstances = [];
-		this.#cards.forEach(card => {
-			for(let i = 0; i<card.count; i++){
-				cardInstances.push(new CardInstance(card));
-			}
-		});
-		return new CardStack(cardInstances);
+	get id(){
+		return this.#id;
+	}
+	
+	delete(){
+		this.#blobs.forEach(URL.revokeObjectURL);
+		this.#blobs = [];
+		this.#cards = [];
 	}
 }

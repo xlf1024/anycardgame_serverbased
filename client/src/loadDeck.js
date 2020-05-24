@@ -3,7 +3,7 @@ import Papaparse from "papaparse";
 import {CardDescription} from "./CardDescription.js";
 import {DeckDescription} from "./DeckDescription.js";
 
-export async function loadDeckFromZip(source){
+export async function loadDeckFromZip(id, source){
 	let zip = new JSZip();
 	await zip.loadAsync(source);
 	let fileBlobs = {};
@@ -24,29 +24,28 @@ export async function loadDeckFromZip(source){
 	let cardTable = Papaparse.parse(csvText,{
 		header:true,
 		skipEmptyLines:"greedy",
-		transform: cell=>{ //replace filenames with their blob URLs
-			let cellt = cell.trim();
-			return cellt in fileBlobs ? fileBlobs[cellt] : cell;
-		}
+		transform: cell=> cell.trim()
 	});
 	let cards = await Promise.all(cardTable.data.map(row => loadCard(cardTable.meta.fields, row)));
 	
-	return new DeckDescription(cards);
+	return new DeckDescription(id, cards, fileBlobs.values);
 }
 async function loadCard(columns, replacements){
 	columns.forEach(column => replacements[column] = replacements[column] || "");
 	const [front, back] = await Promise.all([
-		loadFace(replacements.$frontImage, replacements.$frontTemplate, replacements.$frontType, replacements),
-		loadFace(replacements.$backImage, replacements.$backTemplate, replacements.$backType, replacements)
+		loadFace(replacements.$frontImage, replacements.$frontTemplate, replacements.$frontType, replacements, fileBlobs),
+		loadFace(replacements.$backImage, replacements.$backTemplate, replacements.$backType, replacements, fileBlobs)
 	]);
 	return new CardDescription(front.URL, front.type, back.URL, back.type, replacements.$width, replacements.$height, replacements);
 }
-async function loadFace(image, template, type, replacements){ // retuns the card face as a blob URL
+async function loadFace(image, template, type, replacements, fileBlobs){ // retuns the card face as a blob URL
 	if(image) return {URL: image, type:"image"};
 	if(template){
 		let templateString = await fetch(template).then(res => res.text()); //fetch from blob url;
 		for (let column in replacements){
-			templateString = templateString.split("{{"+column+"}}").join(replacements[column]||"");
+			value = replacements[column]||"";
+			if(fileBlobs[value])value = fileBlobs[value];
+			templateString = templateString.split("{{"+column+"}}").join(value);
 		}
 		return {URL:URL.createObjectURL(new Blob([templateString])), type: type || "image"};
 	}

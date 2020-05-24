@@ -15,9 +15,9 @@
 ```json
 {
 	"mId":<Integer>,
-	"action":"updateStackContents",
+	"action":"updateStack",
 	"stackId":<id>,
-	"contents":[
+	"cards":[
 		{
 			"open":<boolean>,
 			"deck":<id>,
@@ -31,7 +31,7 @@
 ```json
 {
 	"mId":<Integer>,
-	"action":"updateStackPosition",
+	"action":"moveStack",
 	"stackId":<id>,
 	"x":<Number>,
 	"y":<Number>,
@@ -48,7 +48,7 @@
 	"mId":<Integer>,
 	"action":"createStack",
 	"stackId":<id>,
-	"contents":[
+	"cards":[
 		{
 			"open":<boolean>,
 			"deck":<id>,
@@ -102,7 +102,7 @@
 	]
 }
 ```
-*Note: Decks are sorted by creation; Stacks by last moved.*
+*Note: Decks are sorted by creation; Stacks by last moved; the stack that was moved the most recently is the last in the list.*
 
 ### Client to Server
 ```json
