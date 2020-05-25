@@ -70,7 +70,7 @@ export class Stack{
 		this.#menuInteractor = new SVGInteractor(this.#menuContainer, this.#applyPosition.bind(this), {pan:"true", rotate:"true"}, this.sendPosition.bind(this));
 		this.#menuUse = document.createElementNS(SVGNS, "use");
 		this.#menuUse.setAttribute("href",`#stack${this.#id}`);
-		this.#menuUse.addEventListener("click", this.closeMenu.bind());
+		this.#menuUse.addEventListener("click", this.closeMenu.bind(this));
 	}
 	
 	sendPosition(){
