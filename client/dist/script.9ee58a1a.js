@@ -20955,6 +20955,11 @@ class Stack {
       value: void 0
     });
 
+    _menuOptionsGroup.set(this, {
+      writable: true,
+      value: void 0
+    });
+
     _regularContainer.set(this, {
       writable: true,
       value: void 0
@@ -21052,6 +21057,12 @@ class Stack {
     _classPrivateFieldGet(this, _menuUse).setAttribute("href", `#stack${_classPrivateFieldGet(this, _id)}`);
 
     _classPrivateFieldGet(this, _menuUse).addEventListener("click", this.closeMenu.bind(this));
+
+    _classPrivateFieldSet(this, _menuOptionsGroup, document.createElementNS(_namespaces.SVGNS, "g"));
+
+    _classPrivateFieldGet(this, _menuContainer).appendChild(_classPrivateFieldGet(this, _menuUse));
+
+    _classPrivateFieldGet(this, _menuContainer).appendChild(_classPrivateFieldGet(this, _menuOptionsGroup));
   }
 
   sendPosition() {
@@ -21068,8 +21079,6 @@ class Stack {
   openMenu() {
     _classPrivateFieldSet(this, _menuOpen, true);
 
-    _classPrivateFieldGet(this, _menuContainer).appendChild(_classPrivateFieldGet(this, _menuUse));
-
     let t = _coordinateTransform.default.distance.screenToSvg(_classPrivateFieldGet(this, _view).UILayer, 16, 0);
 
     let em = Math.hypot(t.x, t.y);
@@ -21079,30 +21088,28 @@ class Stack {
     let createOption = function (name, listener, positionAngle) {
       let option = document.createElementNS(_namespaces.SVGNS, "use");
       option.setAttribute("href", "#option" + name);
-      option.setAttribute("x", Math.cos(positionAngle * Math.PI / 180) * r);
-      option.setAttribute("y", Math.sin(positionAngle * Math.PI / 180) * r);
       option.addEventListener("click", listener);
 
-      _classPrivateFieldGet(this, _menuContainer).appendChild(option);
+      _classPrivateFieldGet(this, _menuOptionsGroup).appendChild(option);
     }.bind(this);
 
-    createOption("TakeTopCard", evt => take(1, "top"), -60);
-    createOption("TakeRandomCard", evt => take(1, "middle"), -45);
-    createOption("TakeBottomCard", evt => take(1, "bottom"), -30);
-    createOption("TakeTopCards", evt => take(window.promt("how many?"), "top"), -15);
-    createOption("TakeRandomCards", evt => take(window.promt("how many?"), "middle"), -0);
-    createOption("TakeBottomCards", evt => take(window.promt("how many?"), "bottom"), 15);
-    createOption("Shuffle", evt => shuffle(), 30);
-    createOption("Reverse", evt => reverse(), 45);
-    createOption("Flip", evt => flip(), 60);
+    _classPrivateFieldGet(this, _menuOptionsGroup).setAttribute("transform", `scale(${r})`);
+
+    createOption("TakeTopCard", evt => this.take(1, "top"));
+    createOption("TakeRandomCard", evt => this.take(1, "middle"));
+    createOption("TakeBottomCard", evt => this.take(1, "bottom"));
+    createOption("TakeTopCards", evt => this.take(window.promt("how many?"), "top"));
+    createOption("TakeRandomCards", evt => this.take(window.promt("how many?"), "middle"));
+    createOption("TakeBottomCards", evt => this.take(window.promt("how many?"), "bottom"));
+    createOption("Shuffle", evt => this.shuffle());
+    createOption("Reverse", evt => this.reverse());
+    createOption("Flip", evt => this.flip());
 
     _classPrivateFieldGet(this, _view).UILayer.appendChild(_classPrivateFieldGet(this, _menuContainer));
   }
 
   closeMenu() {
-    _classPrivateFieldGet(this, _menuContainer).removeChild(_classPrivateFieldGet(this, _menuUse));
-
-    _classPrivateFieldGet(this, _menuContainer).innerHTML = "";
+    _classPrivateFieldGet(this, _menuOptionsGroup).innerHTML = "";
 
     _classPrivateFieldGet(this, _menuContainer).parentNode.removeChild(_classPrivateFieldGet(this, _menuContainer));
 
@@ -21116,6 +21123,36 @@ class Stack {
     (_classPrivateFieldGet2 = _classPrivateFieldGet(this, _element)) === null || _classPrivateFieldGet2 === void 0 ? void 0 : (_classPrivateFieldGet3 = _classPrivateFieldGet2.parentNode) === null || _classPrivateFieldGet3 === void 0 ? void 0 : _classPrivateFieldGet3.removeChild(_classPrivateFieldGet(this, _element));
     (_classPrivateFieldGet4 = _classPrivateFieldGet(this, _regularContainer)) === null || _classPrivateFieldGet4 === void 0 ? void 0 : (_classPrivateFieldGet5 = _classPrivateFieldGet4.parentNode) === null || _classPrivateFieldGet5 === void 0 ? void 0 : _classPrivateFieldGet5.removeChild(_classPrivateFieldGet(this, _regularContainer));
     (_classPrivateFieldGet6 = _classPrivateFieldGet(this, _menuContainer)) === null || _classPrivateFieldGet6 === void 0 ? void 0 : (_classPrivateFieldGet7 = _classPrivateFieldGet6.parentNode) === null || _classPrivateFieldGet7 === void 0 ? void 0 : _classPrivateFieldGet7.removeChild(_classPrivateFieldGet(this, _menuContainer));
+  }
+
+  take(count, where) {
+    _classPrivateFieldGet(this, _controller).send({
+      "action": "takeStack",
+      "stackId": this.id,
+      "count": count,
+      "where": where
+    });
+  }
+
+  shuffle() {
+    _classPrivateFieldGet(this, _controller).send({
+      "action": "shuffleStack",
+      "stackId": this.id
+    });
+  }
+
+  reverse() {
+    _classPrivateFieldGet(this, _controller).send({
+      "action": "reverseStack",
+      "stackId": this.id
+    });
+  }
+
+  flip() {
+    _classPrivateFieldGet(this, _controller).send({
+      "action": "flipStack",
+      "stackId": this.id
+    });
   }
 
 }
@@ -21135,6 +21172,8 @@ var _view = new WeakMap();
 var _menuContainer = new WeakMap();
 
 var _menuUse = new WeakMap();
+
+var _menuOptionsGroup = new WeakMap();
 
 var _regularContainer = new WeakMap();
 
@@ -21505,4 +21544,4 @@ var _Controller = require("./Controller.js");
 
 window.controller = new _Controller.Controller((document.location.protocol === "https:" ? "wss://" : "ws://") + document.location.host, document.querySelector("svg.CardsContainer"));
 },{"./Controller.js":"Jfq0"}]},{},["mpVp"], null)
-//# sourceMappingURL=/client/dist/script.f7732e4d.js.map
+//# sourceMappingURL=/client/dist/script.9ee58a1a.js.map

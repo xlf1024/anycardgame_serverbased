@@ -8,9 +8,43 @@
 	<body>
 		<svg class="CardsContainer">
 			<defs>
-				<g id="optionShuffle">
-					<circle cx="0" cy="0" r="5" fill="red"></circle>
-					<text x="10" y="5" font-size="10">shuffle</text>
+				<g id="takeOptions">
+					<g id="optionTakeTopCard" class="option">
+						<circle cx="1" cy="-1.2" r="0.1" fill="white" stroke="black" stroke-width="0.015"></circle>
+						<text x="1.15" y="-1.15" font-size="0.2">take card from top</text>
+					</g>
+					<g id="optionTakeRandomCard" class="option">
+						<circle cx="1" cy="-0.9" r="0.1" fill="white" stroke="black" stroke-width="0.015"></circle>
+						<text x="1.15" y="-0.85" font-size="0.2">take card from middle</text>
+					</g>
+					<g id="optionTakeBottomCard" class="option">
+						<circle cx="1" cy="-0.6" r="0.1" fill="white" stroke="black" stroke-width="0.015"></circle>
+						<text x="1.15" y="-0.55" font-size="0.2">take card from bottom</text>
+					</g>
+					<g id="optionTakeTopCards" class="option">
+						<circle cx="1" cy="-0.3" r="0.1" fill="white" stroke="black" stroke-width="0.015"></circle>
+						<text x="1.15" y="-0.25" font-size="0.2">take cards from top</text>
+					</g>
+					<g id="optionTakeRandomCards" class="option">
+						<circle cx="1" cy="0" r="0.1" fill="white" stroke="black" stroke-width="0.015"></circle>
+						<text x="1.15" y="0.05" font-size="0.2">take cards from middle</text>
+					</g>
+					<g id="optionTakeBottomCards" class="option">
+						<circle cx="1" cy="0.3" r="0.1" fill="white" stroke="black" stroke-width="0.015"></circle>
+						<text x="1.15" y="0.35" font-size="0.2">take cards from bottom</text>
+					</g>
+					<g id="optionShuffle" class="option">
+						<circle cx="1" cy="0.6" r="0.1" fill="white" stroke="black" stroke-width="0.015"></circle>
+						<text x="1.15" y="0.65" font-size="0.2">shuffle</text>
+					</g>
+					<g id="optionReverse" class="option">
+						<circle cx="1" cy="0.9" r="0.1" fill="white" stroke="black" stroke-width="0.015"></circle>
+						<text x="1.15" y="0.95" font-size="0.2">reverse</text>
+					</g>
+					<g id="optionFlip" class="option">
+						<circle cx="1" cy="1.2" r="0.1" fill="white" stroke="black" stroke-width="0.015"></circle>
+						<text x="1.15" y="1.25" font-size="0.2">flip</text>
+					</g>
 				</g>
 			</defs>
 			<g class="MainLayer">

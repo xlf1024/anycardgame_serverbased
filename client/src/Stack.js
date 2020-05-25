@@ -10,6 +10,7 @@ export class Stack{
 	#view;
 	#menuContainer;
 	#menuUse;
+	#menuOptionsGroup;
 	#regularContainer;
 	#menuInteractor;
 	#menuOpen = false;
@@ -71,6 +72,9 @@ export class Stack{
 		this.#menuUse = document.createElementNS(SVGNS, "use");
 		this.#menuUse.setAttribute("href",`#stack${this.#id}`);
 		this.#menuUse.addEventListener("click", this.closeMenu.bind(this));
+		this.#menuOptionsGroup = document.createElementNS(SVGNS, "g");
+		this.#menuContainer.appendChild(this.#menuUse);
+		this.#menuContainer.appendChild(this.#menuOptionsGroup);
 	}
 	
 	sendPosition(){
@@ -98,7 +102,6 @@ export class Stack{
 	
 	openMenu(){
 		this.#menuOpen = true;
-		this.#menuContainer.appendChild(this.#menuUse);
 		
 		let t = coordinateTransform.distance.screenToSvg(this.#view.UILayer, 16, 0);
 		let em = Math.hypot(t.x, t.y);
@@ -109,30 +112,27 @@ export class Stack{
 			let option = document.createElementNS(SVGNS, "use");
 			
 			option.setAttribute("href", "#option" + name)
-			
-			option.setAttribute("x", Math.cos(positionAngle * Math.PI / 180) * r);
-			option.setAttribute("y", Math.sin(positionAngle * Math.PI / 180) * r);
 			option.addEventListener("click", listener);
 			
-			this.#menuContainer.appendChild(option);
+			this.#menuOptionsGroup.appendChild(option);
 		}.bind(this);
 		
-		createOption("TakeTopCard", (evt)=>take(1,"top"), -60);
-		createOption("TakeRandomCard", (evt)=>take(1,"middle"), -45);
-		createOption("TakeBottomCard", (evt)=>take(1,"bottom"), -30);
-		createOption("TakeTopCards", (evt)=>take(window.promt("how many?"),"top"), -15);
-		createOption("TakeRandomCards", (evt)=>take(window.promt("how many?"),"middle"), -0);
-		createOption("TakeBottomCards", (evt)=>take(window.promt("how many?"),"bottom"), 15);
-		createOption("Shuffle", (evt)=>shuffle(), 30);
-		createOption("Reverse", (evt)=>reverse(), 45);
-		createOption("Flip", (evt)=>flip(), 60);
+		this.#menuOptionsGroup.setAttribute("transform", `scale(${r})`);
+		createOption("TakeTopCard", (evt)=>this.take(1,"top"));
+		createOption("TakeRandomCard", (evt)=>this.take(1,"middle"));
+		createOption("TakeBottomCard", (evt)=>this.take(1,"bottom"));
+		createOption("TakeTopCards", (evt)=>this.take(window.promt("how many?"),"top"));
+		createOption("TakeRandomCards", (evt)=>this.take(window.promt("how many?"),"middle"));
+		createOption("TakeBottomCards", (evt)=>this.take(window.promt("how many?"),"bottom"));
+		createOption("Shuffle", (evt)=>this.shuffle());
+		createOption("Reverse", (evt)=>this.reverse());
+		createOption("Flip", (evt)=>this.flip());
 		
 		this.#view.UILayer.appendChild(this.#menuContainer);
 	}
 	
 	closeMenu(){
-		this.#menuContainer.removeChild(this.#menuUse);
-		this.#menuContainer.innerHTML = "";
+		this.#menuOptionsGroup.innerHTML = "";
 		this.#menuContainer.parentNode.removeChild(this.#menuContainer);
 		this.#menuOpen = false;
 	}
@@ -142,5 +142,35 @@ export class Stack{
 		this.#element?.parentNode?.removeChild(this.#element);
 		this.#regularContainer?.parentNode?.removeChild(this.#regularContainer);
 		this.#menuContainer?.parentNode?.removeChild(this.#menuContainer);
+	}
+	
+	take(count, where){
+		this.#controller.send({
+			"action":"takeStack",
+			"stackId":this.id,
+			"count":count,
+			"where":where
+		});
+	}
+	
+	shuffle(){
+		this.#controller.send({
+			"action":"shuffleStack",
+			"stackId":this.id
+		});
+	}
+	
+	reverse(){
+		this.#controller.send({
+			"action":"reverseStack",
+			"stackId":this.id
+		});
+	}
+	
+	flip(){
+		this.#controller.send({
+			"action":"flipStack",
+			"stackId":this.id
+		})
 	}
 }

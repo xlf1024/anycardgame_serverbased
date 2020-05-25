@@ -26,6 +26,7 @@ export default class Controller{
 			case "takeStack":{this.doTakeStack(message, respond); break;}
 			case "createStack":{this.doCreateStack(message, respond); break;}
 			case "filterStack":{this.doFilterStack(message, respond); break;}
+			default:{console.error("unkown action:");console.error(message);}
 		}
 	}
 	

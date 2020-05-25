@@ -19,7 +19,7 @@ export class Stack{
 		this.alpha = alpha;
 	}
 	shuffle(){
-		this.cards = shuffle(this.cards);
+		shuffle(this.cards);
 	}
 	reverse(){
 		this.cards.reverse();
