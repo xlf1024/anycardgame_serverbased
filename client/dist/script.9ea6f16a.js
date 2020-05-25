@@ -20667,7 +20667,7 @@ class SVGInteractor {
 
     if (options.scale) {
       let requireFailure = [];
-      if (options.rotate) requireFailure.push("rotate");
+      if (true || options.rotate) requireFailure.push("rotate");
       recognizers.push([_hammerjs.default.Pinch, {
         threshold: 0.1
       }, [], requireFailure]);
@@ -20675,8 +20675,8 @@ class SVGInteractor {
 
     if (options.pan) {
       let requireFailure = [];
-      if (options.rotate) requireFailure.push("rotate");
-      if (options.scale) requireFailure.push("pinch");
+      if (true || options.rotate) requireFailure.push("rotate");
+      if (true || options.scale) requireFailure.push("pinch");
       recognizers.push([_hammerjs.default.Pan, {}, [], requireFailure]);
     }
 
@@ -20950,6 +20950,11 @@ class Stack {
       value: void 0
     });
 
+    _menuUse.set(this, {
+      writable: true,
+      value: void 0
+    });
+
     _regularContainer.set(this, {
       writable: true,
       value: void 0
@@ -20983,6 +20988,8 @@ class Stack {
 
     _classPrivateFieldGet(this, _regularContainer).setAttribute("href", `#stack${_classPrivateFieldGet(this, _id)}`);
 
+    _classPrivateFieldGet(this, _regularContainer).addEventListener("click", this.openMenu.bind(this));
+
     _classPrivateFieldGet(this, _view).mainLayer.appendChild(_classPrivateFieldGet(this, _regularContainer));
 
     this.createMenu();
@@ -21002,8 +21009,7 @@ class Stack {
   }
 
   toTopLayer() {
-    _classPrivateFieldGet(this, _regularContainer).parentNode.removeChild(_classPrivateFieldGet(this, _regularContainer));
-
+    //this.#regularContainer.parentNode.removeChild(this.#regularContainer);
     _classPrivateFieldGet(this, _view).mainLayer.appendChild(_classPrivateFieldGet(this, _regularContainer));
   }
 
@@ -21040,6 +21046,12 @@ class Stack {
       pan: "true",
       rotate: "true"
     }, this.sendPosition.bind(this)));
+
+    _classPrivateFieldSet(this, _menuUse, document.createElementNS(_namespaces.SVGNS, "use"));
+
+    _classPrivateFieldGet(this, _menuUse).setAttribute("href", `#stack${_classPrivateFieldGet(this, _id)}`);
+
+    _classPrivateFieldGet(this, _menuUse).addEventListener("click", this.closeMenu.bind());
   }
 
   sendPosition() {
@@ -21056,17 +21068,13 @@ class Stack {
   openMenu() {
     _classPrivateFieldSet(this, _menuOpen, true);
 
-    _classPrivateFieldGet(this, _menuContainer).innerHTML = "";
-    let use = document.createElementNS(_namespaces.SVGNS, "use");
-    use.setAttribute("href", `#stack${_classPrivateFieldGet(this, _id)}`);
-
-    _classPrivateFieldGet(this, _menuContainer).appendChild(use);
+    _classPrivateFieldGet(this, _menuContainer).appendChild(_classPrivateFieldGet(this, _menuUse));
 
     let t = _coordinateTransform.default.distance.screenToSvg(_classPrivateFieldGet(this, _view).UILayer, 16, 0);
 
     let em = Math.hypot(t.x, t.y);
     let topCard = this.getCard(0);
-    let r = Math.hypot(topCard.width, topCard.height);
+    let r = 0.5 * Math.hypot(topCard.width, topCard.height);
 
     let createOption = function (name, listener, positionAngle) {
       let option = document.createElementNS(_namespaces.SVGNS, "use");
@@ -21092,6 +21100,8 @@ class Stack {
   }
 
   closeMenu() {
+    _classPrivateFieldGet(this, _menuContainer).removeChild(_classPrivateFieldGet(this, _menuUse));
+
     _classPrivateFieldGet(this, _menuContainer).innerHTML = "";
 
     _classPrivateFieldGet(this, _menuContainer).parentNode.removeChild(_classPrivateFieldGet(this, _menuContainer));
@@ -21124,6 +21134,8 @@ var _view = new WeakMap();
 
 var _menuContainer = new WeakMap();
 
+var _menuUse = new WeakMap();
+
 var _regularContainer = new WeakMap();
 
 var _menuInteractor = new WeakMap();
@@ -21138,10 +21150,13 @@ var _applyPosition2 = function _applyPosition2(position) {
     y,
     alpha
   } = position;
-  [_classPrivateFieldGet(this, _menuContainer), _classPrivateFieldGet(this, _regularContainer)].forEach(container => {
-    container.setAttribute("x", x.toString());
-    container.setAttribute("y", y.toString());
-    container.setAttribute("transform", `rotate(${alpha})`);
+  [_classPrivateFieldGet(this, _menuContainer), _classPrivateFieldGet(this, _regularContainer)].forEach(elem => {
+    elem.setAttribute("x", x.toString());
+    elem.setAttribute("y", y.toString());
+    elem.setAttribute("style", `transform-origin: ${x}px ${y}px`);
+  });
+  [_classPrivateFieldGet(this, _menuUse), _classPrivateFieldGet(this, _regularContainer)].forEach(elem => {
+    elem.setAttribute("transform", `rotate(${alpha})`);
   });
 };
 },{"./namespaces.js":"ASQA","./coordinateTransform.js":"HjbV","./SVGInteractor.js":"Uq8D"}],"dWZ4":[function(require,module,exports) {
@@ -21490,4 +21505,4 @@ var _Controller = require("./Controller.js");
 
 window.controller = new _Controller.Controller((document.location.protocol === "https:" ? "wss://" : "ws://") + document.location.host, document.querySelector("svg.CardsContainer"));
 },{"./Controller.js":"Jfq0"}]},{},["mpVp"], null)
-//# sourceMappingURL=/client/dist/script.14646bb8.js.map
+//# sourceMappingURL=/client/dist/script.9ea6f16a.js.map

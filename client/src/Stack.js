@@ -9,6 +9,7 @@ export class Stack{
 	#controller;
 	#view;
 	#menuContainer;
+	#menuUse;
 	#regularContainer;
 	#menuInteractor;
 	#menuOpen = false;
@@ -23,6 +24,7 @@ export class Stack{
 		this.#view = controller.view;
 		this.#view.defs.appendChild(this.#element);
 		this.#regularContainer.setAttribute("href",`#stack${this.#id}`);
+		this.#regularContainer.addEventListener("click", this.openMenu.bind(this));
 		this.#view.mainLayer.appendChild(this.#regularContainer);
 		this.createMenu();
 		this.update(options);
@@ -39,7 +41,7 @@ export class Stack{
 	}
 	
 	toTopLayer(){
-		this.#regularContainer.parentNode.removeChild(this.#regularContainer);
+		//this.#regularContainer.parentNode.removeChild(this.#regularContainer);
 		this.#view.mainLayer.appendChild(this.#regularContainer);
 	}
 	
@@ -66,6 +68,9 @@ export class Stack{
 		this.#menuContainer = document.createElementNS(SVGNS, "svg");
 		this.#menuContainer.setAttribute("overflow", "visible");
 		this.#menuInteractor = new SVGInteractor(this.#menuContainer, this.#applyPosition.bind(this), {pan:"true", rotate:"true"}, this.sendPosition.bind(this));
+		this.#menuUse = document.createElementNS(SVGNS, "use");
+		this.#menuUse.setAttribute("href",`#stack${this.#id}`);
+		this.#menuUse.addEventListener("click", this.closeMenu.bind());
 	}
 	
 	sendPosition(){
@@ -81,24 +86,24 @@ export class Stack{
 	
 	#applyPosition(position){
 		let {x,y,alpha} = position;
-		[this.#menuContainer, this.#regularContainer].forEach(container =>{
-			container.setAttribute("x", x.toString());
-			container.setAttribute("y", y.toString());
-			container.setAttribute("transform", `rotate(${alpha})`);
+		[this.#menuContainer, this.#regularContainer].forEach(elem =>{
+			elem.setAttribute("x", x.toString());
+			elem.setAttribute("y", y.toString());
+			elem.setAttribute("style", `transform-origin: ${x}px ${y}px`);
+		});
+		[this.#menuUse, this.#regularContainer].forEach(elem =>{
+			elem.setAttribute("transform", `rotate(${alpha})`);
 		});
 	}
 	
 	openMenu(){
 		this.#menuOpen = true;
-		this.#menuContainer.innerHTML = "";
-		let use = document.createElementNS(SVGNS, "use");
-		use.setAttribute("href",`#stack${this.#id}`);
-		this.#menuContainer.appendChild(use);
+		this.#menuContainer.appendChild(this.#menuUse);
 		
 		let t = coordinateTransform.distance.screenToSvg(this.#view.UILayer, 16, 0);
 		let em = Math.hypot(t.x, t.y);
 		let topCard = this.getCard(0);
-		let r = Math.hypot(topCard.width, topCard.height);
+		let r = 0.5*Math.hypot(topCard.width, topCard.height);
 		
 		let createOption = function(name, listener, positionAngle){
 			let option = document.createElementNS(SVGNS, "use");
@@ -126,6 +131,7 @@ export class Stack{
 	}
 	
 	closeMenu(){
+		this.#menuContainer.removeChild(this.#menuUse);
 		this.#menuContainer.innerHTML = "";
 		this.#menuContainer.parentNode.removeChild(this.#menuContainer);
 		this.#menuOpen = false;

@@ -27,13 +27,13 @@ export class SVGInteractor{
 		}
 		if(options.scale){
 			let requireFailure = [];
-			if(options.rotate) requireFailure.push("rotate");
+			if(true || options.rotate) requireFailure.push("rotate");
 			recognizers.push([Hammer.Pinch,{threshold:0.1},[],requireFailure]);
 		}
 		if(options.pan){
 			let requireFailure = [];
-			if(options.rotate) requireFailure.push("rotate");
-			if(options.scale) requireFailure.push("pinch");
+			if(true || options.rotate) requireFailure.push("rotate");
+			if(true || options.scale) requireFailure.push("pinch");
 			recognizers.push([Hammer.Pan, {}, [], requireFailure]);
 		}
 		this.#hammer = new Hammer(element,{recognizers});
