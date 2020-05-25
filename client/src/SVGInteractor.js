@@ -22,15 +22,15 @@ export class SVGInteractor{
 		this.#options = options;
 		this.#onmoveend = onmoveend || (()=>{});
 		let recognizers = [];
-		if(options.rotate){
+		if(true || options.rotate){
 			recognizers.push([Hammer.Rotate,{threshold:5}]);
 		}
-		if(options.scale){
+		if(true || options.scale){
 			let requireFailure = [];
 			if(true || options.rotate) requireFailure.push("rotate");
 			recognizers.push([Hammer.Pinch,{threshold:0.1},[],requireFailure]);
 		}
-		if(options.pan){
+		if(true || options.pan){
 			let requireFailure = [];
 			if(true || options.rotate) requireFailure.push("rotate");
 			if(true || options.scale) requireFailure.push("pinch");
