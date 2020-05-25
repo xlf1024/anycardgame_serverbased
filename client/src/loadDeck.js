@@ -26,11 +26,11 @@ export async function loadDeckFromZip(id, source){
 		skipEmptyLines:"greedy",
 		transform: cell=> cell.trim()
 	});
-	let cards = await Promise.all(cardTable.data.map(row => loadCard(cardTable.meta.fields, row)));
+	let cards = await Promise.all(cardTable.data.map(row => loadCard(cardTable.meta.fields, row, fileBlobs)));
 	
-	return new DeckDescription(id, cards, fileBlobs.values);
+	return new DeckDescription(id, cards, Object.values(fileBlobs));
 }
-async function loadCard(columns, replacements){
+async function loadCard(columns, replacements, fileBlobs){
 	columns.forEach(column => replacements[column] = replacements[column] || "");
 	const [front, back] = await Promise.all([
 		loadFace(replacements.$frontImage, replacements.$frontTemplate, replacements.$frontType, replacements, fileBlobs),
@@ -39,11 +39,11 @@ async function loadCard(columns, replacements){
 	return new CardDescription(front.URL, front.type, back.URL, back.type, replacements.$width, replacements.$height, replacements);
 }
 async function loadFace(image, template, type, replacements, fileBlobs){ // retuns the card face as a blob URL
-	if(image) return {URL: image, type:"image"};
+	if(image) return {URL: fileBlobs[image], type:"image"};
 	if(template){
-		let templateString = await fetch(template).then(res => res.text()); //fetch from blob url;
+		let templateString = await fetch(fileBlobs[template]).then(res => res.text()); //fetch from blob url;
 		for (let column in replacements){
-			value = replacements[column]||"";
+			let value = replacements[column]||"";
 			if(fileBlobs[value])value = fileBlobs[value];
 			templateString = templateString.split("{{"+column+"}}").join(value);
 		}
@@ -51,4 +51,4 @@ async function loadFace(image, template, type, replacements, fileBlobs){ // retu
 	}
 	return failedFace;
 }
-const failedFace = {URL:URL.createObjectURL(new Blob(["neither image nor template were specified."])), type:"template"};
+const failedFace = {URL:URL.createObjectURL(new Blob(["neither image nor template were specified."])), type:"html"};

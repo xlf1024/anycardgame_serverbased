@@ -16,7 +16,7 @@ export class DeckDescription{
 		return this.#id;
 	}
 	
-	delete(){
+	destroy(){
 		this.#blobs.forEach(URL.revokeObjectURL);
 		this.#blobs = [];
 		this.#cards = [];

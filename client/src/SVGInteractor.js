@@ -14,11 +14,13 @@ export class SVGInteractor{
 	#dscale=1;
 	#hammer;
 	#options;
+	#onmoveend;
 	
-	constructor(element, callback, options, onmoveend = ()=>{} ){
+	constructor(element, callback, options, onmoveend){
 		this.#element = element;
 		this.#callback = callback;
 		this.#options = options;
+		this.#onmoveend = onmoveend || (()=>{});
 		let recognizers = [];
 		if(options.rotate){
 			recognizers.push([Hammer.Rotate,{threshold:5}]);
@@ -32,79 +34,79 @@ export class SVGInteractor{
 			let requireFailure = [];
 			if(options.rotate) requireFailure.push("rotate");
 			if(options.scale) requireFailure.push("pinch");
-			recognizers.push([Hammer.Pan, {}, [], ["pinch", "rotate"]]);
+			recognizers.push([Hammer.Pan, {}, [], requireFailure]);
 		}
 		this.#hammer = new Hammer(element,{recognizers});
 		
 		if(options.pan){
-			#hammer.on("panmove",onpanmove);
-			#hammer.on("panend",onpanend);
+			this.#hammer.on("panmove",this.onpanmove.bind(this));
+			this.#hammer.on("panend",this.onpanend.bind(this));
 		}
 		if(options.rotate){
-			#hammer.on("roatatemove",onrotatemove);
-			#hammer.on("rotateend",onrotateend);
+			this.#hammer.on("rotatemove",this.onrotatemove.bind(this));
+			this.#hammer.on("rotateend",this.onrotateend.bind(this));
 		}
 		if(options.scale){
-			#hammer.on("pinchmove",onpinchmove);
-			#hammer.on("pinchend",onpinchend);
+			this.#hammer.on("pinchmove",this.onpinchmove.bind(this));
+			this.#hammer.on("pinchend",this.onpinchend.bind(this));
 		}
 		
-		this.#element.addEventListener("wheel", onwheel, {capture:true, passive:false});
+		this.#element.addEventListener("wheel", this.onwheel.bind(this), {capture:true, passive:false});
 	}
 	
 	apply(){
-		#callback({
-			x: #x + #dx;
-			y: #y + #dy;
-			alpha: #alpha + #dalpha;
-			scale: #scale * #dscale
+		this.#callback({
+			x: this.#x + this.#dx,
+			y: this.#y + this.#dy,
+			alpha: this.#alpha + this.#dalpha,
+			scale: this.#scale * this.#dscale
 		});
 	}
 	
-	get x(){return #x;}
-	set x(x){#x = x; apply();}
-	get y(){return #y;}
-	set y(y){#y = y; apply();}
-	get alpha(){return #alpha;}
-	set alpha(alphy){#alpha = alpha; apply();}
-	get scale(){return #scale;}
-	set scale(scale){#scale = scale; apply();}
+	get x(){return this.#x;}
+	set x(x){this.#x = x; this.apply();}
+	get y(){return this.#y;}
+	set y(y){this.#y = y; this.apply();}
+	get alpha(){return this.#alpha;}
+	set alpha(alpha){this.#alpha = alpha; this.apply();}
+	get scale(){return this.#scale;}
+	set scale(scale){this.#scale = scale; this.apply();}
 	
 	onpanmove(evt){
-		let svgDeltaVec = coordinateTransform.distance.screenToSvg(#element, evt.deltaX, evt.deltaY);
-		#dx = -svgDeltaVec.x;
-		#dy = -svgDeltaVec.y;
-		apply();
+		let svgDeltaVec = coordinateTransform.distance.screenToSvg(this.#element, evt.deltaX, evt.deltaY);
+		this.#dx = svgDeltaVec.x;
+		this.#dy = svgDeltaVec.y;
+		this.apply();
 	}
 	
 	onpanend(evt){
-		#x += #dx;
-		#y += #dy;
-		#dx = 0;
-		#dy = 0;
-		onmoveend();
+		this.#x += this.#dx;
+		this.#y += this.#dy;
+		this.#dx = 0;
+		this.#dy = 0;
+		this.#onmoveend();
 	}
 	
 	onpinchmove(evt){
-		#dscale = evt.scale;
-		apply();
+		this.#dscale = evt.scale;
+		this.apply();
 	}
 	
 	onpinchend(evt){
-		#scale *= #dscale;
-		#dscale = 1;
-		onmoveend();
+		this.#scale *= this.#dscale;
+		this.#dscale = 1;
+		this.#onmoveend();
 	}
 	
 	onrotatemove(evt){
-		#dalpha = evt.rotation;
-		apply();
+		this.#dalpha = evt.rotation;
+		this.apply();
 	}
 	
 	onrotateend(evt){
-		#alpha += #dalpha;
-		#dalpha = 0;
-		onmoveend();
+		this.#alpha += this.#dalpha;
+		this.#dalpha = 0;
+		this.#onmoveend();
 	}
 	
 	onwheel(evt){
@@ -124,7 +126,7 @@ export class SVGInteractor{
 		}
 		
 		if(evt.altKey){
-			#alpha += evt.deltaY * factor / 8;
+			this.#alpha += evt.deltaY * factor / 8;
 			//console.log({evt,view,factor});
 			apply();
 			evt.preventDefault();
@@ -138,13 +140,13 @@ export class SVGInteractor{
 		}else{
 			[dx,dy,dz]=[evt.deltaX,evt.deltaY,evt.deltaZ];
 		}
-		let {x,y}=coordinateTransform.distance.screenToSvg(#element, dx*factor,dy*factor);
-		if(#options.pan) #x += x;
-		if(#options.pan) #y += y;
-		if(#options.scale)#scale *= Math.exp(dz*factor/512);
-		apply();
+		let {x,y}=coordinateTransform.distance.screenToSvg(this.#element, dx*factor,dy*factor);
+		if(this.#options.pan) this.#x += x;
+		if(this.#options.pan) this.#y += y;
+		if(this.#options.scale)this.#scale /= Math.exp(dz*factor/512);
+		this.apply();
 		//console.log({evt, factor, dx, dy, dz});
 		evt.preventDefault();
-		onmoveend();
+		this.#onmoveend();
 	}
 }

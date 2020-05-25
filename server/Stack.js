@@ -30,9 +30,9 @@ export class Stack{
 	}
 	merge(stack, where){
 		switch(where){
-			case "top": return mergeTop(stack);
-			case "middle": return mergeMiddle(stack);
-			case "bottom": return mergeBottom(stack);
+			case "top": return this.mergeTop(stack);
+			case "middle": return this.mergeMiddle(stack);
+			case "bottom": return this.mergeBottom(stack);
 		}
 	}
 	mergeBottom(stack){
@@ -46,24 +46,24 @@ export class Stack{
 	}
 	take(count, where){
 		switch(where){
-			case "top": return takeTop(count);
-			case "middle": return takeMiddle(count);
-			case "bottom": return takeBottom(count);
+			case "top": return this.takeTop(count);
+			case "middle": return this.takeMiddle(count);
+			case "bottom": return this.takeBottom(count);
 		}
 	}
 	takeBottom(count = 1){
-		return new Stack(controller, this.cards.splice(-count, count));
+		return new Stack(this.controller, this.cards.splice(-count, count));
 	}
 	takeTop(count = 1){
-		return new Stack(controller, this.cards.splice(0,count));
+		return new Stack(this.controller, this.cards.splice(0,count));
 	}
 	takeMiddle(count = 1){
-		return new Stack(controller, this.cards.splice(randInt(0,this.cards.length - count),count))
+		return new Stack(this.controller, this.cards.splice(randInt(0,this.cards.length - count),count))
 	}
 	filter(criterion, value){
 		let matching = [];
 		let nonMatching = [];
-		cards.forEach(card => {
+		this.scards.forEach(card => {
 			if(controller.getDeck(card.deck).cards[card.index].properties[criterion] === value) matching.push(card);
 			else nonMatching.push(card);
 		});

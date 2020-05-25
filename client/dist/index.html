@@ -3,25 +3,22 @@
 	<head>
 		<meta charset="utf8">
 		<title>anycardgame</title>
-		<link rel="stylesheet" href="style.50744ad1.css">
+		<link rel="stylesheet" href="/client/dist/style.7cfcb710.css">
 	</head>
-	<body id="test">
-		<svg class="table" id="table">
+	<body>
+		<svg class="CardsContainer">
 			<defs>
-				<filter id="backgoundNoise" x="-1.0408e-17" y="-1.0408e-17" width="1" height="1" color-interpolation-filters="sRGB">
-					<feTurbulence baseFrequency="8" numOctaves="5" result="result0" type="fractalNoise"></feTurbulence>
-					<feConvolveMatrix kernelMatrix="-2 0 0 0 -2 0 -2 0 -2 0 0 0 -10 0 0 0 -2 0 -2 0 -2 0 0 0 -2 " order="5 5" result="result5" targetX="2" targetY="2"></feConvolveMatrix>
-					<feComposite in="result5" in2="SourceGraphic" k1="1.5" k2="0.5" k3="0.5" operator="arithmetic" result="result2"></feComposite>
-					<feColorMatrix in="result2" result="result2" type="luminanceToAlpha"></feColorMatrix>
-					<feDiffuseLighting diffuseConstant="0.6" result="result1" surfaceScale="5">
-					<feDistantLight azimuth="225" elevation="35"></feDistantLight>
-					</feDiffuseLighting>
-					<feComposite in="result1" in2="SourceGraphic" k1="0.75" k3="1" operator="arithmetic" result="result3"></feComposite>
-				</filter>
-			 </defs>
-			<rect id="background" x="0%" y="0%" width="100%" height="100%" fill="green" filter="url(#backgoundNoise)"></rect>
-			<rect x="0" y="0" width="50" height="50" stroke="brown" fill="bisque"></rect>
+				<g id="optionShuffle">
+					<circle cx="0" cy="0" r="5" fill="red"></circle>
+				</g>
+			</defs>
+			<g class="MainLayer">
+				<rect class="MainBg"></rect>
+			</g>
+			<g class="UILayer">
+				<rect class="UIBg"></rect>
+			</g>
 		</svg>
-		<script src="script.a064da54.js"></script>
+		<script src="/client/dist/script.14646bb8.js"></script>
 	</body>
 </html>

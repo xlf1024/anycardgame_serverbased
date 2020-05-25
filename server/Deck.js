@@ -23,6 +23,6 @@ export class Deck{
 				});
 			}
 		});
-		return new Stack(cardDescriptions, controller);
+		return new Stack(this.controller, cardDescriptions);
 	}
 }

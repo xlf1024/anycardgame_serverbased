@@ -21,7 +21,7 @@ function handleHttp(request, response){
 	if(url === "") return staticServer.serveFile("/client/dist/index.html", 200, {}, request, response);
 	try{
 		if(url.indexOf("/client/") === 0 || url.indexOf("/node_modules/") === 0) return staticServer.serveFile(url,200, {}, request, response);
-		if(url.indexOf("/upload/") === 0) return staticServer.serveFile(url, 200, {"X-Content-Type-Options": "nosniff", "Content-Type": "application/octet-stream", "X-Robots-Tag":"noindex, noarchive, nofollow"}, request, response)
+		if(url.indexOf("/upload/") === 0) return staticServer.serveFile(url, 200, {"X-Content-Type-Options": "nosniff", "Content-Type": "application/octet-stream", "X-Robots-Tag":"noindex, noarchive, nofollow"}, request, response);
 	}catch(e){
 		console.error(e);
 	}
@@ -31,9 +31,9 @@ function handleHttp(request, response){
 
 function onWsConnect(socket){
 	console.log(socket);
-	socket.on("open", ()=>clients.push(socket));
+	clients.push(socket);
 	socket.on("message", onmessage);
-	socket.on("close", ()=>clients.splice(clients.findIndex(client => client == socket),1));
+	socket.on("close", ()=>{console.log("close");clients.splice(clients.findIndex(client => client == socket),1)});
 	
 	function onmessage(data){
 		console.log(data);
@@ -47,7 +47,8 @@ function onWsConnect(socket){
 
 function broadcast(message){
 	let json = JSON.stringify(message);
-	clients.forEach(client.send(json));
+	console.log(json);
+	clients.forEach(client => client.send(json));
 }
 
 async function handleUpload(request, response){

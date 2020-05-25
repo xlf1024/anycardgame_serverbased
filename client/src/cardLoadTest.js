@@ -4,7 +4,7 @@ import {loadDeckFromZip} from "./loadDeck.js";
 let out = document.getElementById("out");
 let fileinput = document.getElementById("fileinput");
 fileinput.addEventListener("change",evt=>{
-	loadDeckFromZip(evt.target.files[0])
+	loadDeckFromZip(0,evt.target.files[0])
 		.then(deck=>{
 			window.deck = deck;
 			deck.cards.forEach(card=>{

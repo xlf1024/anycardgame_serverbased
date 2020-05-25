@@ -17401,7 +17401,7 @@ class DeckDescription {
     return _classPrivateFieldGet(this, _id);
   }
 
-  delete() {
+  destroy() {
     _classPrivateFieldGet(this, _blobs).forEach(URL.revokeObjectURL);
 
     _classPrivateFieldSet(this, _blobs, []);
@@ -17451,35 +17451,33 @@ async function loadDeckFromZip(id, source) {
   let cardTable = _papaparse.default.parse(csvText, {
     header: true,
     skipEmptyLines: "greedy",
-    transform: cell => {
-      //replace filenames with their blob URLs
-      let cellt = cell.trim();
-      return cellt in fileBlobs ? fileBlobs[cellt] : cell;
-    }
+    transform: cell => cell.trim()
   });
 
-  let cards = await Promise.all(cardTable.data.map(row => loadCard(cardTable.meta.fields, row)));
-  return new _DeckDescription.DeckDescription(id, cards, fileBlobs.values);
+  let cards = await Promise.all(cardTable.data.map(row => loadCard(cardTable.meta.fields, row, fileBlobs)));
+  return new _DeckDescription.DeckDescription(id, cards, Object.values(fileBlobs));
 }
 
-async function loadCard(columns, replacements) {
+async function loadCard(columns, replacements, fileBlobs) {
   columns.forEach(column => replacements[column] = replacements[column] || "");
-  const [front, back] = await Promise.all([loadFace(replacements.$frontImage, replacements.$frontTemplate, replacements.$frontType, replacements), loadFace(replacements.$backImage, replacements.$backTemplate, replacements.$backType, replacements)]);
+  const [front, back] = await Promise.all([loadFace(replacements.$frontImage, replacements.$frontTemplate, replacements.$frontType, replacements, fileBlobs), loadFace(replacements.$backImage, replacements.$backTemplate, replacements.$backType, replacements, fileBlobs)]);
   return new _CardDescription.CardDescription(front.URL, front.type, back.URL, back.type, replacements.$width, replacements.$height, replacements);
 }
 
-async function loadFace(image, template, type, replacements) {
+async function loadFace(image, template, type, replacements, fileBlobs) {
   // retuns the card face as a blob URL
   if (image) return {
-    URL: image,
+    URL: fileBlobs[image],
     type: "image"
   };
 
   if (template) {
-    let templateString = await fetch(template).then(res => res.text()); //fetch from blob url;
+    let templateString = await fetch(fileBlobs[template]).then(res => res.text()); //fetch from blob url;
 
     for (let column in replacements) {
-      templateString = templateString.split("{{" + column + "}}").join(replacements[column] || "");
+      let value = replacements[column] || "";
+      if (fileBlobs[value]) value = fileBlobs[value];
+      templateString = templateString.split("{{" + column + "}}").join(value);
     }
 
     return {
@@ -17493,7 +17491,7 @@ async function loadFace(image, template, type, replacements) {
 
 const failedFace = {
   URL: URL.createObjectURL(new Blob(["neither image nor template were specified."])),
-  type: "template"
+  type: "html"
 };
 },{"jszip":"zl0j","papaparse":"g2Wo","./CardDescription.js":"JTA7","./DeckDescription.js":"gHo7"}],"ckwZ":[function(require,module,exports) {
 "use strict";
@@ -17505,7 +17503,7 @@ var _loadDeck = require("./loadDeck.js");
 let out = document.getElementById("out");
 let fileinput = document.getElementById("fileinput");
 fileinput.addEventListener("change", evt => {
-  (0, _loadDeck.loadDeckFromZip)(evt.target.files[0]).then(deck => {
+  (0, _loadDeck.loadDeckFromZip)(0, evt.target.files[0]).then(deck => {
     window.deck = deck;
     deck.cards.forEach(card => {
       let svg = document.createElementNS(_namespaces.SVGNS, "svg");
@@ -17524,4 +17522,4 @@ fileinput.addEventListener("change", evt => {
   });
 });
 },{"./namespaces.js":"ASQA","./loadDeck.js":"Ld0F"}]},{},["ckwZ"], null)
-//# sourceMappingURL=cardLoadTest.37eaa90f.js.map
+//# sourceMappingURL=/client/dist/cardLoadTest.1575b02d.js.map

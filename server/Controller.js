@@ -17,39 +17,39 @@ export default class Controller{
 	
 	onmessage(message, respond){
 		switch(message.action){
-			case "resync":{doResync(); break;}
-			case "moveStack":{doMoveStack(message, respond); break;}
-			case "shuffleStack":{doShuffleStack(message, respond); break;}
-			case "reverseStack":{doReverseStack(message, respond); break;}
-			case "flipStack":{doFlipStack(message, respond); break;}
-			case "mergeStack":{doMergeStack(message, respond); break;}
-			case "takeStack":{doTakeStack(message, respond); break;}
-			case "createStack":{doCreateStack(message, respond); break;}
-			case "filterStack":{doFilterStack(message, respond); break;}
+			case "resync":{this.doResync(); break;}
+			case "moveStack":{this.doMoveStack(message, respond); break;}
+			case "shuffleStack":{this.doShuffleStack(message, respond); break;}
+			case "reverseStack":{this.doReverseStack(message, respond); break;}
+			case "flipStack":{this.doFlipStack(message, respond); break;}
+			case "mergeStack":{this.doMergeStack(message, respond); break;}
+			case "takeStack":{this.doTakeStack(message, respond); break;}
+			case "createStack":{this.doCreateStack(message, respond); break;}
+			case "filterStack":{this.doFilterStack(message, respond); break;}
 		}
 	}
 	
 	getStack(id){
-		return stacks.filter(stack.id === id);
+		return this.stacks.find(stack => stack.id === id);
 	}
 	getDeck(id){
-		return decks.filter(stack.id === id);
+		return this.decks.find(deck => deck.id === id);
 	}
 	
 	createStackId(){
-		return ++sId;
+		return ++this.sId;
 	}
 	
 	createDeckId(){
-		return ++dId;
+		return ++this.dId;
 	}
 	
 	doResync(){
-		if(mId == lastResync) return;
-		mId++;
-		lastResync = mId;
-		let deckDescriptions = decks.map(deck => {return {id: deck.id, file:deck.file}});
-		let stackDescriptions = stacks.map(stack => {return {stackId: stack.id, cards: stack.cards, x:stack.x, y:stack.y, alpha:stack.alpha}});
+		if(this.mId == this.lastResync) return;
+		this.mId++;
+		this.lastResync = this.mId;
+		let deckDescriptions = this.decks.map(deck => {return {deckId: deck.id, file:deck.file}});
+		let stackDescriptions = this.stacks.map(stack => {return {stackId: stack.id, cards: stack.cards, x:stack.x, y:stack.y, alpha:stack.alpha}});
 		this.broadcast({
 			mId:this.mId,
 			action:"resync",
@@ -59,60 +59,65 @@ export default class Controller{
 	}
 	
 	doMoveStack(message, respond){
-		let stack = stacks.splice(stacks.findIndex(stack => stack.id === message.stackId));
-		stacks.push(stack);
+		let stack = this.stacks.splice(this.stacks.findIndex(stack => stack.id === message.stackId),1)[0];
+		this.stacks.push(stack);
 		stack.move(message.x, message.y, message.alpha);
-		sendMoveStack(stack);
+		this.sendMoveStack(stack);
 	}
 	
 	doShuffleStack(message, respond){
-		let stack = getStack(message.stackId);
+		let stack = this.getStack(message.stackId);
 		stack.shuffle();
-		sendUpdateStack(stack);
+		this.sendUpdateStack(stack);
 	}
 	doReverseStack(message, respond){
-		let stack = getStack(message.stackId);
+		let stack = this.getStack(message.stackId);
 		stack.reverse();
-		sendUpdateStack(stack);
+		this.sendUpdateStack(stack);
+	}
+	doFlipStack(message, respond){
+		let stack = this.getStack(message.stackId);
+		stack.flip();
+		this.sendUpdateStack(stack);
 	}
 	doMergeStack(message, respond){
-		let movingStack = stacks.splice(stacks.findIndex(stack => stack.id == message.movingStack));
-		let stayingStack = getStack(message.stayingStack);
+		let movingStack = this.stacks.splice(this.stacks.findIndex(stack => stack.id == message.movingStack),1)[0];
+		let stayingStack = this.getStack(message.stayingStack);
 		stayingStack.merge(movingStack, message.where);
-		updateStack(stayingStack);
-		deleteStack(movingStack);
+		this.sendUpdateStack(stayingStack);
+		this.sendDeleteStack(movingStack);
 	}
 	doTakeStack(message, respond){
-		let stack = getStack(message.stackId);
+		let stack = this.getStack(message.stackId);
 		let newStack = stack.take(message.count, message.where);
-		stacks.push(newStack);
-		sendUpdateStack(stack);
-		sendCreateStack(newStack);
-		sendActivateStack(newStack, respond);
+		this.stacks.push(newStack);
+		this.sendUpdateStack(stack);
+		this.sendCreateStack(newStack);
+		this.sendActivateStack(newStack, respond);
 	}
 	doCreateStack(message, respond){
-		let deck = getDeck(message.deckId);
+		let deck = this.getDeck(message.deckId);
 		let newStack = deck.createStack();
-		stacks.push(newStack);
-		sendCreateStack(newStack);
-		sendActivateStack(newStack, respond);
+		this.stacks.push(newStack);
+		this.sendCreateStack(newStack);
+		this.sendActivateStack(newStack, respond);
 	}
 	doFilterStack(message, respond){
-		let stack = getStack(message.stackId);
+		let stack = this.getStack(message.stackId);
 		let newStack = stack.filter(message.criterion, message.value);
-		stacks.push(newStack);
-		sendUpdateStack(stack);
-		sendCreateStack(newStack);
-		sendActivateStack(newStack, respond);
+		this.stacks.push(newStack);
+		this.sendUpdateStack(stack);
+		this.sendCreateStack(newStack);
+		this.sendActivateStack(newStack, respond);
 	}
 	doDeleteStack(message, respond){
-		let stack = stacks.splice(stacks.findIndex(stack => stack.id === message.stackId));
-		sendDeleteStack(stack);
+		let stack = this.stacks.splice(stacks.findIndex(stack => stack.id === message.stackId));
+		this.sendDeleteStack(stack);
 	}
 	
 	sendUpdateStack(stack){
 		this.broadcast({
-			mId: ++mId,
+			mId: ++this.mId,
 			action: "updateStack",
 			stackId: stack.id,
 			cards: stack.cards
@@ -120,7 +125,7 @@ export default class Controller{
 	}
 	sendMoveStack(stack){
 		this.broadcast({
-			mId: ++mId,
+			mId: ++this.mId,
 			action: "moveStack",
 			stackId: stack.id,
 			x: stack.x,
@@ -130,7 +135,7 @@ export default class Controller{
 	}
 	sendCreateStack(stack){
 		this.broadcast({
-			mId: ++mId,
+			mId: ++this.mId,
 			action: "createStack",
 			stackId: stack.id,
 			cards: stack.cards,
@@ -141,14 +146,14 @@ export default class Controller{
 	}
 	sendActivateStack(stack, respond){
 		respond({
-			mId: mId,
+			mId: this.mId,
 			action: "activateStack",
 			stackId: stack.id
 		});
 	}
 	sendDeleteStack(stack){
 		this.broadcast({
-			mId: ++mId,
+			mId: ++this.mId,
 			action: "deleteStack",
 			stackId: stack.id
 		});
@@ -156,12 +161,12 @@ export default class Controller{
 	
 	async loadDeck(source, URL){
 		let deck = await loadDeckFromZip(this, source, URL);
-		decks.push(deck);
-		sendLoadDeck(deck);
+		this.decks.push(deck);
+		this.sendLoadDeck(deck);
 	}
 	sendLoadDeck(deck){
 		this.broadcast({
-			mId: ++mId,
+			mId: ++this.mId,
 			action: "loadDeck",
 			deckId: deck.id,
 			file: deck.file

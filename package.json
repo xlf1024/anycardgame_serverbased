@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "Game-agnostic online card game table. Cards not included.",
   "main": "\"\"",
-  "type":"module",
+  "type": "module",
   "scripts": {
     "build": "rm -r -v client/dist/ && parcel build client/src/index.html client/src/cardLoadTest.html -d client/dist/ --public-url /client/dist/ --no-minify --log-level 4"
   },
@@ -20,15 +20,17 @@
   "devDependencies": {
     "@babel/core": "^7.9.6",
     "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/plugin-proposal-optional-chaining": "^7.9.0",
+    "@babel/plugin-proposal-private-methods": "^7.8.3",
     "@egjs/hammerjs": "git+https://github.com/xlf1024/hammer.js.git",
-    "jszip": "^3.4.0",
-    "papaparse": "^5.2.0",
     "parcel": "^1.12.4"
   },
   "dependencies": {
+    "jszip": "^3.4.0",
     "node-static": "^0.7.11",
+    "papaparse": "^5.2.0",
     "uuid": "^8.1.0",
-    "ws": "^7.2.5"
+    "ws": "^7.3.0"
   },
   "browserslist": [
     "last 1 Firefox versions"

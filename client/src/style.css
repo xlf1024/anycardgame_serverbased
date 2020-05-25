@@ -1,10 +1,16 @@
 body{
 	margin:0px;
 }
-.table{
+.CardsContainer{
 	position:fixed;
 	width: 200vmax;
 	height: 200vmax;
 	left: calc(50vw - 100vmax);
 	top: calc(50vh - 100vmax);
+}
+.MainBg{
+	fill:aliceblue;
+}
+.UIBg{
+	fill:none;
 }

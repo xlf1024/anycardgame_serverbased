@@ -14,63 +14,65 @@ export class Controller{
 	outBlockLevel = 1;
 	view;
 	
-	constructor(serverURL, DOMContainer){
-		ws = new WebSocket(serverURL);
-		ws.binaryType = "blob";
-		ws.onopen = this.onopen;
-		ws.onmessage = this.onmessage;
-		view = new View(this, DOMContainer);
+	constructor(serverURL, SVGElement){
+		this.ws = new WebSocket(serverURL);
+		this.ws.binaryType = "blob";
+		this.ws.onopen = this.onopen.bind(this);
+		this.ws.onmessage = this.onmessage.bind(this);
+		this.view = new View(this, SVGElement);
 	}
 	
 	onopen(){
+		console.log("open");
 		this.outBlockLevel--;
+		this.sendMessages();
 	}
 	
 	onmessage(evt){
-		inQueue.push(JSON.parse(evt.data));
-		handleMessages();
+		this.inQueue.push(JSON.parse(evt.data));
+		this.handleMessages();
 	}
 	handleMessages(){
-		while(inQueue.length > 0 && inBlockLevel == 0){
-			handleMessage();
+		while(this.inQueue.length > 0 && this.inBlockLevel == 0){
+			this.handleMessage();
 		}
 	}
 	handleMessage(){
-		let message = inQueue.unshift();
+		let message = this.inQueue.shift();
 		if(message.action === "resync"){
-			lastMId = message.mId;
-			doResync(message);
+			this.lastMId = message.mId;
+			this.doResync(message);
 			return;
 		}
-		if(message.mId > lastMId + 1){
-			sendMessage({
+		if(message.mId > this.lastMId + 1){
+			this.send({
 				"action":"resync"
 			});
 			return;
 		}
-		if(message.mId < lastMId){
+		if(message.mId < this.lastMId){
 			return;
 		}
-		lastMId = message.mId;
+		this.lastMId = message.mId;
 		switch(message.action){
 			case "loadDeck":{
-				doLoadDeck(message);
+				this.doLoadDeck(message);
 				break;
 			}
 			case "updateStack":{
-				doUpdateStack(message);
+				this.doUpdateStack(message);
 				break;
 			}
 			case "moveStack":{
-				doMoveStack(message);
+				this.doMoveStack(message);
 				break;
 			}
 			case "createStack":{
-				doCreateStack(message);
+				this.doCreateStack(message);
 				break;
 			}
 			case "deleteStack":{
-				doDeleteStack(message);
+				this.doDeleteStack(message);
 				break;
 			}
 			default:{
@@ -81,25 +83,25 @@ export class Controller{
 	}
 	
 	async doResync(message){
-		inBlockLevel++;
-		this.stacks.splice().forEach(stack => this.doDeleteStack(stack.id));
-		this.decks.splice().forEach(deck => this.doDeleteDeck(deck.id));
-		await Promise.all(message.decks.map(this.doLoadDeck));
-		message.stacks.forEach(this.doCreateStack);
-		inBlockLevel--;
-		handleMessages();
+		this.inBlockLevel++;
+		this.stacks.slice().forEach(stack => this.doDeleteStack({stackId:stack.id}));
+		this.decks.slice().forEach(deck => this.doDeleteDeck({deckId:deck.id}));
+		await Promise.all(message.decks.map(deck => this.doLoadDeck(deck)));
+		message.stacks.forEach(stack => this.doCreateStack(stack));
+		this.inBlockLevel--;
+		this.handleMessages();
 	}
 	
 	async doLoadDeck(message){
-		inBlockLevel++;
-		let file = await fetch(message.file);
-		decks.push(await loadDeckFromZip(message.id, message.file));
-		inBlockLevel--;
+		this.inBlockLevel++;
+		let file = await fetch(message.file).then(res => res.blob());
+		this.decks.push(await loadDeckFromZip(message.deckId, file));
+		this.inBlockLevel--;
 	}
 	
 	doDeleteDeck(message){
 		let deck = this.decks.splice(this.decks.findIndex(deck => deck.id === message.deckId), 1)[0];
-		deck.delete();
+		deck.destroy();
 	}
 	doCreateStack(message){
 		this.stacks.push(new Stack(this, message));
@@ -111,8 +113,8 @@ export class Controller{
 		this.stacks.find(stack => stack.id === message.stackId).update(message);
 	}
 	doDeleteStack(message){
-		let stack = this.stacks.splice(this.stacks.findIndex(stack => stack.id === message.stackId))[0];
-		stack.delete();
+		let stack = this.stacks.splice(this.stacks.findIndex(stack => stack.id === message.stackId), 1)[0];
+		stack.destroy();
 	}
 	
 	getDeck(deckId){
@@ -121,15 +123,17 @@ export class Controller{
 	
 	send(message){
 		this.outQueue.push(message);
+		this.sendMessages();
 	}
 	
 	sendMessages(){
 		while(this.outQueue.length > 0 && this.outBlockLevel == 0){
-			sendMessage();
+			this.sendMessage();
 		}
 	}
 	sendMessage(){
-		let message = this.outQueue.unshift();
+		let message = this.outQueue.shift();
+		console.log(message);
 		this.ws.send(JSON.stringify(message));
 	}
 }
