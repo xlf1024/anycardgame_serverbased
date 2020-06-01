@@ -8,9 +8,26 @@ import Controller from "./Controller.js";
 import {v4 as uuid} from "uuid";
 const clients = [];
 
-const name = process.argv[2];
-const password = process.argv[3];
-const httpServer = http.createServer(handleHttp).listen(1024);
+const port = process.argv[2];
+const name = process.argv[3];
+const password = process.argv[4];
+
+let httpServer;
+try{
+	const certChainPath = process.argv[5];
+	const privateKeyPath = process.argv[6];
+	const certChain = fs.readFileSync(certChainPath);
+	const privateKey = fs.readFileSync(privateKeyPath);
+	oonsole.log("certificates loaded. starting server");
+	httpServer = https.createServer({
+		cert:certChain,
+		key:privateKey
+	},handleHttp).listen(port);
+}catch(e){
+	console.error("Loading certificates failed; using http instead");
+	console.error(e);
+	httpServer = http.createServer(handleHttp).listen(port);
+}
 const staticServer = new nodeStatic.Server("./",{cache: 0});
 const wsServer = new ws.Server({noServer: true});
 wsServer.on("connection",onWsConnect);
