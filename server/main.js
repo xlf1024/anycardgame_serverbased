@@ -17,7 +17,7 @@ wsServer.on("connection",onWsConnect);
 httpServer.on("upgrade", onHttpUpgrade);
 
 function handleHttp(request, response){
-	console.log({url:request.url, method:request.method});
+	console.log({url:request.url, method:request.method, auth:request.headers.authorization});
 	
 	if(!testHttpAuth(request)){
 		response.statusCode = 401;
@@ -35,19 +35,18 @@ function handleHttp(request, response){
 		return;
 	}
 	try{
-		if(url.indexOf("/client/") === 0 || url.indexOf("/node_modules/") === 0) return staticServer.serveFile(url,200, {}, request, response, staticServed);
-		if(url.indexOf("/upload/") === 0) return staticServer.serveFile(url, 200, {"X-Content-Type-Options": "nosniff", "Content-Type": "application/octet-stream", "X-Robots-Tag":"noindex, noarchive, nofollow"}, request, response, staticServed);
+		if(url.indexOf("/client/") === 0 || url.indexOf("/node_modules/") === 0) return staticServer.serveFile(url,200, {}, request, response).addListener("error", staticError);
+		if(url.indexOf("/upload/") === 0) return staticServer.serveFile(url, 200, {"X-Content-Type-Options": "nosniff", "Content-Type": "application/octet-stream", "X-Robots-Tag":"noindex, noarchive, nofollow"}, request, response.addListener("error", staticError);
 	}catch(e){
 		console.error(e);
 	}
 	response.statusCode = 403;
 	response.end();
-}
 
-function staticServed(err, result){
-	if(err){
+	function staticError(err){
 		console.log("staticServed");
 		response.writeHead(err.status, err.headers);
+		respomse.write(err.status);
 		response.end();
 	}
 }
