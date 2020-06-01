@@ -18,7 +18,7 @@ try{
 	const privateKeyPath = process.argv[6];
 	const certChain = fs.readFileSync(certChainPath);
 	const privateKey = fs.readFileSync(privateKeyPath);
-	oonsole.log("certificates loaded. starting server");
+	console.log("certificates loaded. starting server");
 	httpServer = https.createServer({
 		cert:certChain,
 		key:privateKey
