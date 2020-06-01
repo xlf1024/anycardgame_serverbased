@@ -46,7 +46,7 @@ function handleHttp(request, response){
 	function staticError(err){
 		console.log("staticServed");
 		response.statusCode = 404;
-		response.write(404);
+		response.write("404");
 		response.end();
 	}
 }
