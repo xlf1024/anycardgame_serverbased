@@ -35,7 +35,7 @@ wsServer.on("connection",onWsConnect);
 httpServer.on("upgrade", onHttpUpgrade);
 
 function handleHttp(request, response){
-	console.log({url:request.url, method:request.method, auth:request.headers.authorization});
+	console.log("[[",request.method,"]]",readAuth(request),"@",request.socket.remoteAddress,":",request.socket.remotePort, request.url);
 	
 	if(!testHttpAuth(request)){
 		response.statusCode = 401;
@@ -46,7 +46,7 @@ function handleHttp(request, response){
 	
 	if(request.method == "POST") return handleUpload(request, response);
 	let url = path.posix.join(request.url);
-	console.log({url});
+	//console.log({url});
 	if(url === "" || url === "/"){
 		response.writeHead(307, {Location:"/client/dist/index.html"});
 		response.end();
@@ -68,13 +68,16 @@ function handleHttp(request, response){
 		response.end();
 	}
 }
-
+function readAuth(request){
+	if(!request.headers.authorization) return null;
+	if(!request.headers.authorization.startsWith("Basic ")) return null;
+	return atob(request.headers.authorization.split(" ")[1]);
+}
 function testHttpAuth(request){
-	if(!request.headers.authorization) return false;
-	
-	if(!request.headers.authorization.startsWith("Basic ")) return false;
-	
-	let [sentName,sentPassword] = atob(request.headers.authorization.split(" ")[1]).split(":");
+	let auth = readAuth(request);
+	if(!auth) return false;
+	if(auth.indexOf(":")===-1) return false;
+	let [sentName,sentPassword] = auth.split(":");
 	
 	return sentName === name && sentPassword === password;
 }
@@ -90,25 +93,32 @@ function onHttpUpgrade(request, socket, head){
 	}
 	wsServer.handleUpgrade(request, socket, head, (ws)=>wsServer.emit("connection",ws,request));
 }
-function onWsConnect(ws){
-	console.log(ws);
+
+function onWsConnect(ws, request){
+	let socket = request.socket;
+	console.log("client connected",readAuth(request),"@", socket.remoteAddress, ":", socket.remotePort);
 	clients.push(ws);
 	ws.on("message", onmessage);
 	ws.on("close", ()=>{console.log("close");clients.splice(clients.findIndex(client => client == ws),1)});
 	
 	function onmessage(data){
-		console.log(data);
+		console.log("<<",socket.remoteAddress,":",socket.remotePort,"<<",data);
 		try{
-			controller.onmessage(JSON.parse(data), response => ws.send(JSON.stringify(response)));
+			controller.onmessage(JSON.parse(data), respond);
 		}catch(e){
 			console.error(e);
 		}
+	}
+	
+	function respond(data){
+		console.log(">>",socket.remoteAddress,":",socket.remotePort,">>",data);
+		ws.send(JSON.stringify(data));
 	}
 }
 
 function broadcast(message){
 	let json = JSON.stringify(message);
-	console.log(json);
+	console.log(">>>>",message);
 	clients.forEach(client => client.send(json));
 }
 
