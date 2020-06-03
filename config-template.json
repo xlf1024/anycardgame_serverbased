@@ -1,0 +1,5 @@
+{
+	"port":1024,
+	"chain":"path/to/certificate/chain.pem",
+	"key":"path/to/private/key.pem"
+}

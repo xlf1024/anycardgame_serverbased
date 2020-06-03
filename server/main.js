@@ -3,20 +3,42 @@ import https from "https";
 import ws from "ws";
 import fs from "fs";
 const fsp = fs.promises;
+import Argr from "argr";
 import nodeStatic from "node-static";
 import path from "path";
 import Controller from "./Controller.js";
 import {v4 as uuid} from "uuid";
 const clients = [];
 
-const port = process.argv[2];
-const name = process.argv[3];
-const password = process.argv[4];
+let fileConfig;
+try{
+	fileConfig = JSON.parse(fs.readFileSync("config.json"),{encoding:"utf8"});
+}catch(e){
+	console.error("loading config.json failed. See config-template.json for an example:", e);
+	fileConfig = {};
+}
+
+let argr = Argr();
+argr.option(["P","port"],"port");
+argr.option(["v","viewlogin"],"user login credentials for spectating, format name:password");
+argr.option(["p","playlogin"],"user login credentials for playing, format name:password");
+argr.option(["u","uploadlogin"],"user login credentials for uploading cards and playing, format name:password");
+argr.option(["c","chain","certchain"],"path to https certificate chain in pem format.");
+argr.option(["k","key","privkey"], "path to https private key in pem format");
+argr.init(process.argv);
+
+const port = Number(argr.get("port")) || Number(fileConfig.port);
+const viewLogins = [argr.get("viewlogin") || []].flat();
+const playLogins = [argr.get("playlogin") || []].flat();
+const uploadLogins = [argr.get("uploadlogin") || []].flat();
+const certChainPath = argr.get("chain") || fileConfig.chain;
+const privateKeyPath = argr.get("key") || fileConfig.key;
+
+console.log("using config:")
+console.log({port, viewLogins, playLogins, uploadLogins, certChainPath, privateKeyPath});
 
 let httpServer;
 try{
-	const certChainPath = process.argv[5];
-	const privateKeyPath = process.argv[6];
 	const certChain = fs.readFileSync(certChainPath);
 	const privateKey = fs.readFileSync(privateKeyPath);
 	console.log("certificates loaded. starting server");
@@ -25,8 +47,7 @@ try{
 		key:privateKey
 	},handleHttp).listen(port);
 }catch(e){
-	console.error("Loading certificates failed; using http instead");
-	console.error(e);
+	console.error("Loading certificates failed; using http instead:", e);
 	httpServer = http.createServer(handleHttp).listen(port);
 }
 const staticServer = new nodeStatic.Server("./",{cache: 0});
@@ -76,10 +97,12 @@ function readAuth(request){
 function testHttpAuth(request){
 	let auth = readAuth(request);
 	if(!auth) return false;
-	if(auth.indexOf(":")===-1) return false;
-	let [sentName,sentPassword] = auth.split(":");
 	
-	return sentName === name && sentPassword === password;
+	if(uploadLogins.indexOf(auth)!==-1) return "upload";
+	if(playLogins.indexOf(auth)!==-1) return "play";
+	if(viewLogins.indexOf(auth)!==-1) return "view";
+	
+	return false;
 }
 function atob(base64){
 	return Buffer.from(base64, "base64").toString("utf8");
@@ -96,6 +119,7 @@ function onHttpUpgrade(request, socket, head){
 
 function onWsConnect(ws, request){
 	let socket = request.socket;
+	let permission = testHttpAuth(request);
 	console.log("client connected",readAuth(request),"@", socket.remoteAddress, ":", socket.remotePort);
 	clients.push(ws);
 	ws.on("message", onmessage);
@@ -104,7 +128,10 @@ function onWsConnect(ws, request){
 	function onmessage(data){
 		console.log("<<",socket.remoteAddress,":",socket.remotePort,"<<",data);
 		try{
-			controller.onmessage(JSON.parse(data), respond);
+			let json = JSON.parse(data);
+			if(permission === "play" || permission === "upload" || json.action === "resync"){
+				controller.onmessage(json, respond);
+			}
 		}catch(e){
 			console.error(e);
 		}
@@ -123,24 +150,30 @@ function broadcast(message){
 }
 
 async function handleUpload(request, response){
-		let filename = "/upload/" + uuid();
-		try{
-			await fsp.mkdir("./upload/", {recursive:true});
-			await fsp.writeFile("./" + filename, "", {flags:fs.constants.O_CREAT});
-			let writer = fs.createWriteStream("./" + filename);
-			request.pipe(writer);
-			await new Promise(resolve => request.addListener("end", resolve));
-			let data = await fsp.readFile("./" + filename);
-			console.log(data);
-			await controller.loadDeck(data,filename);
-			response.statusCode = 200;
-			response.end();
-		}catch(e){
-			console.error(e);
-			await fsp.unlink("./" + filename);
-			response.statusCode = 500;
-			response.end();
-		}
+	if(testHttpAuth(request)!=="upload"){
+		response.statusCode = 403;
+		response.end();
+		return;
+	}
+	
+	let filename = "/upload/" + uuid();
+	try{
+		await fsp.mkdir("./upload/", {recursive:true});
+		await fsp.writeFile("./" + filename, "", {flags:fs.constants.O_CREAT});
+		let writer = fs.createWriteStream("./" + filename);
+		request.pipe(writer);
+		await new Promise(resolve => request.addListener("end", resolve));
+		let data = await fsp.readFile("./" + filename);
+		console.log(data);
+		await controller.loadDeck(data,filename);
+		response.statusCode = 200;
+		response.end();
+	}catch(e){
+		console.error(e);
+		await fsp.unlink("./" + filename);
+		response.statusCode = 500;
+		response.end();
+	}
 }
 
 const controller = new Controller(broadcast);

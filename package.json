@@ -26,6 +26,7 @@
     "parcel": "^1.12.4"
   },
   "dependencies": {
+    "argr": "^1.2.2",
     "jszip": "^3.4.0",
     "node-static": "^0.7.11",
     "papaparse": "^5.2.0",
