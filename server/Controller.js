@@ -17,7 +17,7 @@ export default class Controller{
 	
 	onmessage(message, respond){
 		switch(message.action){
-			case "resync":{this.doResync(); break;}
+			case "resync":{this.doResync(respond); break;}
 			case "moveStack":{this.doMoveStack(message, respond); break;}
 			case "shuffleStack":{this.doShuffleStack(message, respond); break;}
 			case "reverseStack":{this.doReverseStack(message, respond); break;}
@@ -45,18 +45,27 @@ export default class Controller{
 		return ++this.dId;
 	}
 	
-	doResync(){
-		if(this.mId == this.lastResync) return;
-		this.mId++;
-		this.lastResync = this.mId;
+	doResync(respond){
 		let deckDescriptions = this.decks.map(deck => {return {deckId: deck.id, file:deck.file}});
 		let stackDescriptions = this.stacks.map(stack => {return {stackId: stack.id, cards: stack.cards, x:stack.x, y:stack.y, alpha:stack.alpha}});
-		this.broadcast({
-			mId:this.mId,
-			action:"resync",
-			decks:deckDescriptions,
-			stacks:stackDescriptions,
-		})
+		
+		if(this.mId == this.lastResync){
+			respond({
+				mId:this.mId,
+				action:"resync",
+				decks:deckDescriptions,
+				stacks:stackDescriptions,
+			})
+		}else{
+			this.mId++;
+			this.lastResync = this.mId;
+			this.broadcast({
+				mId:this.mId,
+				action:"resync",
+				decks:deckDescriptions,
+				stacks:stackDescriptions,
+			})
+		}
 	}
 	
 	doMoveStack(message, respond){

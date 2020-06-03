@@ -25,6 +25,9 @@ export class Controller{
 	onopen(){
 		console.log("open");
 		this.outBlockLevel--;
+		this.send({
+			"action":"resync"
+		});
 		this.sendMessages();
 	}
 	
