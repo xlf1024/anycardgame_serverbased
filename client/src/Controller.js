@@ -128,8 +128,14 @@ export class Controller{
 		if(this.activeStackId!==null){
 			this.getStack(this.activeStackId).deactivate();
 		}
-		this.activeStackId = message.stackId;
-		this.getStack(this.activeStackId).activate();
+		if(this.getStack(message.stackId)){
+			this.activeStackId = message.stackId;
+			this.getStack(this.activeStackId).activate();
+		}else{
+			this.send({
+				"action":"resync"
+			});
+		}
 	}
 	doDeactivateStack(){
 		if(this.activeStackId!==null){

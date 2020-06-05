@@ -20583,13 +20583,13 @@ function _classPrivateFieldGet(receiver, privateMap) { var descriptor = privateM
 function _classPrivateFieldSet(receiver, privateMap, value) { var descriptor = privateMap.get(receiver); if (!descriptor) { throw new TypeError("attempted to set private field on non-instance"); } if (descriptor.set) { descriptor.set.call(receiver, value); } else { if (!descriptor.writable) { throw new TypeError("attempted to set read only private field"); } descriptor.value = value; } return value; }
 
 class SVGInteractor {
-  constructor(element, callback, options, onmoveend) {
+  constructor(elements, callback, options, onmoveend) {
     _callback.set(this, {
       writable: true,
       value: void 0
     });
 
-    _element.set(this, {
+    _elements.set(this, {
       writable: true,
       value: void 0
     });
@@ -20634,7 +20634,7 @@ class SVGInteractor {
       value: 1
     });
 
-    _hammer.set(this, {
+    _hammers.set(this, {
       writable: true,
       value: void 0
     });
@@ -20649,7 +20649,7 @@ class SVGInteractor {
       value: void 0
     });
 
-    _classPrivateFieldSet(this, _element, element);
+    _classPrivateFieldSet(this, _elements, [elements].flat());
 
     _classPrivateFieldSet(this, _callback, callback);
 
@@ -20680,32 +20680,32 @@ class SVGInteractor {
       recognizers.push([_hammerjs.default.Pan, {}, [], requireFailure]);
     }
 
-    _classPrivateFieldSet(this, _hammer, new _hammerjs.default(element, {
-      recognizers
+    _classPrivateFieldSet(this, _hammers, _classPrivateFieldGet(this, _elements).map(element => {
+      let hammer = new _hammerjs.default(element, {
+        recognizers
+      });
+
+      if (options.pan) {
+        hammer.on("panmove", this.onpanmove.bind(this));
+        hammer.on("panend", this.onpanend.bind(this));
+      }
+
+      if (options.rotate) {
+        hammer.on("rotatemove", this.onrotatemove.bind(this));
+        hammer.on("rotateend", this.onrotateend.bind(this));
+      }
+
+      if (options.scale) {
+        hammer.on("pinchmove", this.onpinchmove.bind(this));
+        hammer.on("pinchend", this.onpinchend.bind(this));
+      }
+
+      element.addEventListener("wheel", this.onwheel.bind(this), {
+        capture: true,
+        passive: false
+      });
+      return hammer;
     }));
-
-    if (options.pan) {
-      _classPrivateFieldGet(this, _hammer).on("panmove", this.onpanmove.bind(this));
-
-      _classPrivateFieldGet(this, _hammer).on("panend", this.onpanend.bind(this));
-    }
-
-    if (options.rotate) {
-      _classPrivateFieldGet(this, _hammer).on("rotatemove", this.onrotatemove.bind(this));
-
-      _classPrivateFieldGet(this, _hammer).on("rotateend", this.onrotateend.bind(this));
-    }
-
-    if (options.scale) {
-      _classPrivateFieldGet(this, _hammer).on("pinchmove", this.onpinchmove.bind(this));
-
-      _classPrivateFieldGet(this, _hammer).on("pinchend", this.onpinchend.bind(this));
-    }
-
-    _classPrivateFieldGet(this, _element).addEventListener("wheel", this.onwheel.bind(this), {
-      capture: true,
-      passive: false
-    });
   }
 
   apply() {
@@ -20758,7 +20758,7 @@ class SVGInteractor {
   }
 
   onpanmove(evt) {
-    let svgDeltaVec = _coordinateTransform.default.distance.screenToSvg(_classPrivateFieldGet(this, _element), evt.deltaX, evt.deltaY);
+    let svgDeltaVec = _coordinateTransform.default.distance.screenToSvg(evt.target, evt.deltaX, evt.deltaY);
 
     _classPrivateFieldSet(this, _dx, svgDeltaVec.x);
 
@@ -20851,7 +20851,7 @@ class SVGInteractor {
     let {
       x,
       y
-    } = _coordinateTransform.default.distance.screenToSvg(_classPrivateFieldGet(this, _element), dx * factor, dy * factor);
+    } = _coordinateTransform.default.distance.screenToSvg(evt.target, dx * factor, dy * factor);
 
     if (_classPrivateFieldGet(this, _options).pan) _classPrivateFieldSet(this, _x, _classPrivateFieldGet(this, _x) + x);
     if (_classPrivateFieldGet(this, _options).pan) _classPrivateFieldSet(this, _y, _classPrivateFieldGet(this, _y) + y);
@@ -20869,7 +20869,7 @@ exports.SVGInteractor = SVGInteractor;
 
 var _callback = new WeakMap();
 
-var _element = new WeakMap();
+var _elements = new WeakMap();
 
 var _x = new WeakMap();
 
@@ -20887,7 +20887,7 @@ var _scale = new WeakMap();
 
 var _dscale = new WeakMap();
 
-var _hammer = new WeakMap();
+var _hammers = new WeakMap();
 
 var _options = new WeakMap();
 
@@ -21661,8 +21661,14 @@ class Controller {
       this.getStack(this.activeStackId).deactivate();
     }
 
-    this.activeStackId = message.stackId;
-    this.getStack(this.activeStackId).activate();
+    if (this.getStack(message.stackId)) {
+      this.activeStackId = message.stackId;
+      this.getStack(this.activeStackId).activate();
+    } else {
+      this.send({
+        "action": "resync"
+      });
+    }
   }
 
   doDeactivateStack() {
@@ -21707,4 +21713,4 @@ var _Controller = require("./Controller.js");
 
 window.controller = new _Controller.Controller((document.location.protocol === "https:" ? "wss://" : "ws://") + document.location.host, document.querySelector("svg.CardsContainer"));
 },{"./Controller.js":"Jfq0"}]},{},["mpVp"], null)
-//# sourceMappingURL=/client/dist/script.e0d1b055.js.map
+//# sourceMappingURL=/client/dist/script.6faecfbb.js.map

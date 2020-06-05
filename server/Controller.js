@@ -102,6 +102,7 @@ export default class Controller{
 	doTakeStack(message, respond){
 		let stack = this.getStack(message.stackId);
 		let newStack = stack.take(message.count, message.where);
+		if(newStack.cards.length<=0)return;
 		this.stacks.push(newStack);
 		this.sendUpdateStack(stack);
 		this.sendCreateStack(newStack);
@@ -110,6 +111,7 @@ export default class Controller{
 	doCreateStack(message, respond){
 		let deck = this.getDeck(message.deckId);
 		let newStack = deck.createStack();
+		if(newStack.cards.length<=0)return;
 		this.stacks.push(newStack);
 		this.sendCreateStack(newStack);
 		this.sendActivateStack(newStack, respond);
@@ -117,6 +119,7 @@ export default class Controller{
 	doFilterStack(message, respond){
 		let stack = this.getStack(message.stackId);
 		let newStack = stack.filter(message.criterion, message.value);
+		if(newStack.cards.length<=0)return;
 		this.stacks.push(newStack);
 		this.sendUpdateStack(stack);
 		this.sendCreateStack(newStack);
@@ -126,7 +129,6 @@ export default class Controller{
 		let stack = this.stacks.splice(stacks.findIndex(stack => stack.id === message.stackId));
 		this.sendDeleteStack(stack);
 	}
-	
 	sendUpdateStack(stack){
 		if(stack.cards.length <= 0){
 			doDeleteStack({stackId:stack.id}, ()=>{});
