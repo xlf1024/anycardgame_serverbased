@@ -68,6 +68,7 @@ export default class Controller{
 		}
 	}
 	
+	
 	doMoveStack(message, respond){
 		let stack = this.stacks.splice(this.stacks.findIndex(stack => stack.id === message.stackId),1)[0];
 		this.stacks.push(stack);
@@ -91,6 +92,7 @@ export default class Controller{
 		this.sendUpdateStack(stack);
 	}
 	doMergeStack(message, respond){
+		if(message.movingStack == message.stayingStack) return;
 		let movingStack = this.stacks.splice(this.stacks.findIndex(stack => stack.id == message.movingStack),1)[0];
 		let stayingStack = this.getStack(message.stayingStack);
 		stayingStack.merge(movingStack, message.where);
@@ -126,12 +128,16 @@ export default class Controller{
 	}
 	
 	sendUpdateStack(stack){
-		this.broadcast({
-			mId: ++this.mId,
-			action: "updateStack",
-			stackId: stack.id,
-			cards: stack.cards
-		})
+		if(stack.cards.length <= 0){
+			doDeleteStack({stackId:stack.id}, ()=>{});
+		}else{
+			this.broadcast({
+				mId: ++this.mId,
+				action: "updateStack",
+				stackId: stack.id,
+				cards: stack.cards
+			})
+		}
 	}
 	sendMoveStack(stack){
 		this.broadcast({

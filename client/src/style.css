@@ -14,4 +14,8 @@ body{
 .UIBg{
 	fill:none;
 }
+.stack[active]{
+	filter:drop-shadow(0 0 5px red);
+	opacity: 0.5;
+	pointer-events:none;
 }

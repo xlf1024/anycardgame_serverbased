@@ -78,6 +78,10 @@ export class Controller{
 				this.doDeleteStack(message);
 				break;
 			}
+			case "activateStack":{
+				this.doActivateStack(message);
+				break;
+			}
 			default:{
 				alert("unknown message");
 				console.error(message);
@@ -110,20 +114,35 @@ export class Controller{
 		this.stacks.push(new Stack(this, message));
 	}
 	doMoveStack(message){
-		this.stacks.find(stack => stack.id === message.stackId).move(message);
+		this.getStack(message.stackId).move(message);
 	}
 	doUpdateStack(message){
-		this.stacks.find(stack => stack.id === message.stackId).update(message);
+		this.getStack(message.stackId).update(message);
 	}
 	doDeleteStack(message){
-		let stack = this.stacks.splice(this.stacks.findIndex(stack => stack.id === message.stackId), 1)[0];
-		stack.destroy();
+		this.getStack(message.stackId).destroy();
+		this.stacks.splice(this.stacks.findIndex(stack => stack.id === message.stackId), 1)[0];
 	}
-	
+	doActivateStack(message){
+		this.stacks.forEach(stack => stack.closeMenu());
+		if(this.activeStackId!==null){
+			this.getStack(this.activeStackId).deactivate();
+		}
+		this.activeStackId = message.stackId;
+		this.getStack(this.activeStackId).activate();
+	}
+	doDeactivateStack(){
+		if(this.activeStackId!==null){
+			this.getStack(this.activeStackId).deactivate();
+			this.activeStackId = null;
+		}
+	}
 	getDeck(deckId){
 		return this.decks.find(deck => deck.id == deckId);
 	}
-	
+	getStack(stackId){
+		return this.stacks.find(stack => stack.id === stackId);
+	}
 	send(message){
 		this.outQueue.push(message);
 		this.sendMessages();

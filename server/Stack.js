@@ -8,10 +8,13 @@ export class Stack{
 	y = 0;
 	alpha = 0;
 	
-	constructor(controller, cards){
+	constructor(controller, cards, x=0, y=0, alpha=0){
 		this.id = controller.createStackId();
 		this.cards = cards;
 		this.controller = controller;
+		this.x = x;
+		this.y = y;
+		this.alpha = alpha;
 	}
 	move(x, y, alpha){
 		this.x = x;
@@ -52,23 +55,23 @@ export class Stack{
 		}
 	}
 	takeBottom(count = 1){
-		return new Stack(this.controller, this.cards.splice(-count, count));
+		return new Stack(this.controller, this.cards.splice(-count, count), this.x, this.y, this.alpha);
 	}
 	takeTop(count = 1){
-		return new Stack(this.controller, this.cards.splice(0,count));
+		return new Stack(this.controller, this.cards.splice(0,count), this.x, this.y, this.alpha);
 	}
 	takeMiddle(count = 1){
-		return new Stack(this.controller, this.cards.splice(randInt(0,this.cards.length - count),count))
+		return new Stack(this.controller, this.cards.splice(randInt(0,this.cards.length - count),count), this.x, this.y, this.alpha)
 	}
 	filter(criterion, value){
 		let matching = [];
 		let nonMatching = [];
-		this.scards.forEach(card => {
-			if(controller.getDeck(card.deck).cards[card.index].properties[criterion] === value) matching.push(card);
+		this.cards.forEach(card => {
+			if(this.controller.getDeck(card.deck).cards[card.card].properties[criterion] === value) matching.push(card);
 			else nonMatching.push(card);
 		});
 		this.cards = nonMatching;
 		
-		return new Stack(controller, matching);
+		return new Stack(this.controller, matching, this.x, this.y, this.alpha);
 	}
 }

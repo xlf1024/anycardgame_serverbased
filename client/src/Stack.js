@@ -14,6 +14,7 @@ export class Stack{
 	#regularContainer;
 	#menuInteractor;
 	#menuOpen = false;
+	#active = false;
 	
 	constructor(controller, options){
 		this.#id = options.stackId;
@@ -22,6 +23,7 @@ export class Stack{
 		this.#regularContainer = document.createElementNS(SVGNS, "use");
 		this.#element = document.createElementNS(SVGNS, "g");
 		this.#element.setAttribute("id", `stack${this.#id}`);
+		this.#element.setAttribute("class", "stack");
 		this.#view = controller.view;
 		this.#view.defs.appendChild(this.#element);
 		this.#regularContainer.setAttribute("href",`#stack${this.#id}`);
@@ -100,7 +102,47 @@ export class Stack{
 		});
 	}
 	
-	openMenu(){
+	activate(){
+		this.#element.setAttribute("active","active");
+		this.#menuUse.setAttribute("active","active");
+		this.#regularContainer.setAttribute("active","active");
+		this.#active = true;
+	}
+	
+	deactivate(){
+		this.#element.removeAttribute("active");
+		this.#menuUse.removeAttribute("active");
+		this.#regularContainer.removeAttribute("active");
+		this.#active = false;
+	}
+	
+	openMenu(evt){
+		evt.preventDefault();
+		if(this.#controller.activeStackId !== null)this.openDropMenu(evt);
+		else this.openTakeMenu(evt);
+	}
+	openTakeMenu(){
+		let {createOption} = this.prepareMenu();
+		let countIndicator = document.createElementNS(SVGNS, "text");
+		countIndicator.innerHTML = this.#cards.length;
+		countIndicator.setAttribute("x", "-1");
+		countIndicator.setAttribute("y", "0");
+		countIndicator.setAttribute("font-size","0.2");
+		this.#menuOptionsGroup.appendChild(countIndicator);
+		createOption("TakeStack", (evt)=>this.takeStack());
+		createOption("TakeTopCard", (evt)=>this.take(1,"top"));
+		createOption("TakeRandomCard", (evt)=>this.take(1,"middle"));
+		createOption("TakeBottomCard", (evt)=>this.take(1,"bottom"));
+		createOption("TakeTopCards", (evt)=>this.take(window.prompt("how many?"),"top"));
+		createOption("TakeRandomCards", (evt)=>this.take(window.prompt("how many?"),"middle"));
+		createOption("TakeBottomCards", (evt)=>this.take(window.prompt("how many?"),"bottom"));
+		createOption("Shuffle", (evt)=>this.shuffle());
+		createOption("Reverse", (evt)=>this.reverse());
+		createOption("Flip", (evt)=>this.flip());
+		createOption("Filter", (evt)=>this.filter());
+		
+	}
+	prepareMenu(){
 		this.#menuOpen = true;
 		
 		let t = coordinateTransform.distance.screenToSvg(this.#view.UILayer, 16, 0);
@@ -118,27 +160,29 @@ export class Stack{
 		}.bind(this);
 		
 		this.#menuOptionsGroup.setAttribute("transform", `scale(${r})`);
-		createOption("TakeTopCard", (evt)=>this.take(1,"top"));
-		createOption("TakeRandomCard", (evt)=>this.take(1,"middle"));
-		createOption("TakeBottomCard", (evt)=>this.take(1,"bottom"));
-		createOption("TakeTopCards", (evt)=>this.take(window.promt("how many?"),"top"));
-		createOption("TakeRandomCards", (evt)=>this.take(window.promt("how many?"),"middle"));
-		createOption("TakeBottomCards", (evt)=>this.take(window.promt("how many?"),"bottom"));
-		createOption("Shuffle", (evt)=>this.shuffle());
-		createOption("Reverse", (evt)=>this.reverse());
-		createOption("Flip", (evt)=>this.flip());
-		
 		this.#view.UILayer.appendChild(this.#menuContainer);
+		return {createOption};
+	}
+	openDropMenu(openingEvt){
+		let {createOption} = this.prepareMenu();
+		createOption("MergeTop", (evt)=>this.merge("top"));
+		createOption("MergeMiddle", (evt)=>this.merge("middle"));
+		createOption("MergeBottom", (evt)=>this.merge("bottom"));
+		createOption("PlaceSeparate", (evt)=>{
+			this.closeMenu();
+			this.#view.onclick(openingEvt)
+		});
 	}
 	
 	closeMenu(){
 		this.#menuOptionsGroup.innerHTML = "";
-		this.#menuContainer.parentNode.removeChild(this.#menuContainer);
+		this.#menuContainer?.parentNode?.removeChild(this.#menuContainer);
 		this.#menuOpen = false;
 	}
 	
 	destroy(){
 		console.log(this);
+		if(this.#active)this.#controller.doDeactivateStack();
 		this.#element?.parentNode?.removeChild(this.#element);
 		this.#regularContainer?.parentNode?.removeChild(this.#regularContainer);
 		this.#menuContainer?.parentNode?.removeChild(this.#menuContainer);
@@ -172,5 +216,45 @@ export class Stack{
 			"action":"flipStack",
 			"stackId":this.id
 		})
+	}
+	
+	takeStack(){
+		this.#controller.doActivateStack({stackId:this.id});
+		this.closeMenu();
+	}
+	
+	filter(){
+		let criteria = this.#cards
+			.map((_,i)=>Object.keys(this.getCard(i).properties))
+			.flat()
+			.filter((c,i,a)=>a.indexOf(c)===i);
+		let criterion = window.prompt("criterion?\ne.g.: " + criteria.join(", "));
+		let values = this.#cards
+			.map((_,i)=>this.getCard(i).properties[criterion])
+			.filter((c,i,a)=>c!==undefined&&c!==null&&a.indexOf(c)===i);
+		let value = window.prompt("value?\ne.g.: " + values.join(", "));
+		this.#controller.send({
+			"action":"filterStack",
+			"stackId":this.id,
+			"criterion":criterion,
+			"value":value
+		})
+	}
+	
+	merge(where){
+		this.#controller.send({
+			"action":"mergeStack",
+			"where":where,
+			"movingStack":this.#controller.activeStackId,
+			"stayingStack":this.id
+		})
+		this.closeMenu();
+	}
+	
+	moveTo(x,y){
+		this.#menuInteractor.x = x;
+		this.#menuInteractor.y = y;
+		this.sendPosition();
+		this.#controller.doDeactivateStack();
 	}
 }

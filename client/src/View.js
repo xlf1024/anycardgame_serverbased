@@ -1,5 +1,6 @@
 import {SVGNS} from "./namespaces.js";
 import {SVGInteractor} from "./SVGInteractor.js";
+import coordinateTransform from "./coordinateTransform.js";
 
 export class View{
 	#container;
@@ -28,7 +29,8 @@ export class View{
 		this.#UIBg = container.querySelector(".UIBg");
 		
 		this.#interactor = new SVGInteractor(this.#mainLayer, this.#applyPosition.bind(this), {"pan":true, "rotate":true, "scale":true});
-		this.#interactor.scale = 1/200;
+		this.#interactor.scale = 1/2000;
+		this.#mainBg.addEventListener("click", this.onclick.bind(this));
 	}
 	
 	get defs(){return this.#defs;}
@@ -47,5 +49,13 @@ export class View{
 		this.#UIBg.setAttribute("y", - y - 0.5/scale);
 		this.#UIBg.setAttribute("width", 1/scale);
 		this.#UIBg.setAttribute("height", 1/scale);
+	}
+	
+	onclick(evt){
+		if(this.#controller.activeStackId){
+			let stack = this.#controller.getStack(this.#controller.activeStackId);
+			let {x,y} = coordinateTransform.point.screenToSvg(this.#container, evt.x, evt.y);
+			stack.moveTo(x,y);
+		}
 	}
 }

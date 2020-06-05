@@ -14,6 +14,10 @@ body{
 .UIBg{
 	fill:none;
 }
+.stack[active]{
+	filter:drop-shadow(0 0 5px red);
+	opacity: 0.5;
+	pointer-events:none;
 }
 
-/*# sourceMappingURL=/client/dist/style.d39f8224.css.map */
+/*# sourceMappingURL=/client/dist/style.c9c15a62.css.map */

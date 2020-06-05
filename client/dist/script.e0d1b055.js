@@ -20975,6 +20975,11 @@ class Stack {
       value: false
     });
 
+    _active.set(this, {
+      writable: true,
+      value: false
+    });
+
     _classPrivateFieldSet(this, _id, options.stackId);
 
     _classPrivateFieldSet(this, _cards, options.cards);
@@ -20986,6 +20991,8 @@ class Stack {
     _classPrivateFieldSet(this, _element, document.createElementNS(_namespaces.SVGNS, "g"));
 
     _classPrivateFieldGet(this, _element).setAttribute("id", `stack${_classPrivateFieldGet(this, _id)}`);
+
+    _classPrivateFieldGet(this, _element).setAttribute("class", "stack");
 
     _classPrivateFieldSet(this, _view, controller.view);
 
@@ -21076,7 +21083,57 @@ class Stack {
     });
   }
 
-  openMenu() {
+  activate() {
+    _classPrivateFieldGet(this, _element).setAttribute("active", "active");
+
+    _classPrivateFieldGet(this, _menuUse).setAttribute("active", "active");
+
+    _classPrivateFieldGet(this, _regularContainer).setAttribute("active", "active");
+
+    _classPrivateFieldSet(this, _active, true);
+  }
+
+  deactivate() {
+    _classPrivateFieldGet(this, _element).removeAttribute("active");
+
+    _classPrivateFieldGet(this, _menuUse).removeAttribute("active");
+
+    _classPrivateFieldGet(this, _regularContainer).removeAttribute("active");
+
+    _classPrivateFieldSet(this, _active, false);
+  }
+
+  openMenu(evt) {
+    evt.preventDefault();
+    if (_classPrivateFieldGet(this, _controller).activeStackId !== null) this.openDropMenu(evt);else this.openTakeMenu(evt);
+  }
+
+  openTakeMenu() {
+    let {
+      createOption
+    } = this.prepareMenu();
+    let countIndicator = document.createElementNS(_namespaces.SVGNS, "text");
+    countIndicator.innerHTML = _classPrivateFieldGet(this, _cards).length;
+    countIndicator.setAttribute("x", "-1");
+    countIndicator.setAttribute("y", "0");
+    countIndicator.setAttribute("font-size", "0.2");
+
+    _classPrivateFieldGet(this, _menuOptionsGroup).appendChild(countIndicator);
+
+    createOption("TakeStack", evt => this.takeStack());
+    createOption("TakeTopCard", evt => this.take(1, "top"));
+    createOption("TakeRandomCard", evt => this.take(1, "middle"));
+    createOption("TakeBottomCard", evt => this.take(1, "bottom"));
+    createOption("TakeTopCards", evt => this.take(window.prompt("how many?"), "top"));
+    createOption("TakeRandomCards", evt => this.take(window.prompt("how many?"), "middle"));
+    createOption("TakeBottomCards", evt => this.take(window.prompt("how many?"), "bottom"));
+    createOption("Shuffle", evt => this.shuffle());
+    createOption("Reverse", evt => this.reverse());
+    createOption("Flip", evt => this.flip());
+    createOption("Filter", evt => this.filter());
+  }
+
+  prepareMenu() {
     _classPrivateFieldSet(this, _menuOpen, true);
 
     let t = _coordinateTransform.default.distance.screenToSvg(_classPrivateFieldGet(this, _view).UILayer, 16, 0);
@@ -21095,34 +21152,44 @@ class Stack {
 
     _classPrivateFieldGet(this, _menuOptionsGroup).setAttribute("transform", `scale(${r})`);
 
-    createOption("TakeTopCard", evt => this.take(1, "top"));
-    createOption("TakeRandomCard", evt => this.take(1, "middle"));
-    createOption("TakeBottomCard", evt => this.take(1, "bottom"));
-    createOption("TakeTopCards", evt => this.take(window.promt("how many?"), "top"));
-    createOption("TakeRandomCards", evt => this.take(window.promt("how many?"), "middle"));
-    createOption("TakeBottomCards", evt => this.take(window.promt("how many?"), "bottom"));
-    createOption("Shuffle", evt => this.shuffle());
-    createOption("Reverse", evt => this.reverse());
-    createOption("Flip", evt => this.flip());
-
     _classPrivateFieldGet(this, _view).UILayer.appendChild(_classPrivateFieldGet(this, _menuContainer));
+
+    return {
+      createOption
+    };
+  }
+
+  openDropMenu(openingEvt) {
+    let {
+      createOption
+    } = this.prepareMenu();
+    createOption("MergeTop", evt => this.merge("top"));
+    createOption("MergeMiddle", evt => this.merge("middle"));
+    createOption("MergeBottom", evt => this.merge("bottom"));
+    createOption("PlaceSeparate", evt => {
+      this.closeMenu();
+
+      _classPrivateFieldGet(this, _view).onclick(openingEvt);
+    });
   }
 
   closeMenu() {
-    _classPrivateFieldGet(this, _menuOptionsGroup).innerHTML = "";
+    var _classPrivateFieldGet2, _classPrivateFieldGet3;
 
-    _classPrivateFieldGet(this, _menuContainer).parentNode.removeChild(_classPrivateFieldGet(this, _menuContainer));
+    _classPrivateFieldGet(this, _menuOptionsGroup).innerHTML = "";
+    (_classPrivateFieldGet2 = _classPrivateFieldGet(this, _menuContainer)) === null || _classPrivateFieldGet2 === void 0 ? void 0 : (_classPrivateFieldGet3 = _classPrivateFieldGet2.parentNode) === null || _classPrivateFieldGet3 === void 0 ? void 0 : _classPrivateFieldGet3.removeChild(_classPrivateFieldGet(this, _menuContainer));
 
     _classPrivateFieldSet(this, _menuOpen, false);
   }
 
   destroy() {
-    var _classPrivateFieldGet2, _classPrivateFieldGet3, _classPrivateFieldGet4, _classPrivateFieldGet5, _classPrivateFieldGet6, _classPrivateFieldGet7;
+    var _classPrivateFieldGet4, _classPrivateFieldGet5, _classPrivateFieldGet6, _classPrivateFieldGet7, _classPrivateFieldGet8, _classPrivateFieldGet9;
 
     console.log(this);
-    (_classPrivateFieldGet2 = _classPrivateFieldGet(this, _element)) === null || _classPrivateFieldGet2 === void 0 ? void 0 : (_classPrivateFieldGet3 = _classPrivateFieldGet2.parentNode) === null || _classPrivateFieldGet3 === void 0 ? void 0 : _classPrivateFieldGet3.removeChild(_classPrivateFieldGet(this, _element));
-    (_classPrivateFieldGet4 = _classPrivateFieldGet(this, _regularContainer)) === null || _classPrivateFieldGet4 === void 0 ? void 0 : (_classPrivateFieldGet5 = _classPrivateFieldGet4.parentNode) === null || _classPrivateFieldGet5 === void 0 ? void 0 : _classPrivateFieldGet5.removeChild(_classPrivateFieldGet(this, _regularContainer));
-    (_classPrivateFieldGet6 = _classPrivateFieldGet(this, _menuContainer)) === null || _classPrivateFieldGet6 === void 0 ? void 0 : (_classPrivateFieldGet7 = _classPrivateFieldGet6.parentNode) === null || _classPrivateFieldGet7 === void 0 ? void 0 : _classPrivateFieldGet7.removeChild(_classPrivateFieldGet(this, _menuContainer));
+    if (_classPrivateFieldGet(this, _active)) _classPrivateFieldGet(this, _controller).doDeactivateStack();
+    (_classPrivateFieldGet4 = _classPrivateFieldGet(this, _element)) === null || _classPrivateFieldGet4 === void 0 ? void 0 : (_classPrivateFieldGet5 = _classPrivateFieldGet4.parentNode) === null || _classPrivateFieldGet5 === void 0 ? void 0 : _classPrivateFieldGet5.removeChild(_classPrivateFieldGet(this, _element));
+    (_classPrivateFieldGet6 = _classPrivateFieldGet(this, _regularContainer)) === null || _classPrivateFieldGet6 === void 0 ? void 0 : (_classPrivateFieldGet7 = _classPrivateFieldGet6.parentNode) === null || _classPrivateFieldGet7 === void 0 ? void 0 : _classPrivateFieldGet7.removeChild(_classPrivateFieldGet(this, _regularContainer));
+    (_classPrivateFieldGet8 = _classPrivateFieldGet(this, _menuContainer)) === null || _classPrivateFieldGet8 === void 0 ? void 0 : (_classPrivateFieldGet9 = _classPrivateFieldGet8.parentNode) === null || _classPrivateFieldGet9 === void 0 ? void 0 : _classPrivateFieldGet9.removeChild(_classPrivateFieldGet(this, _menuContainer));
   }
 
   take(count, where) {
@@ -21155,6 +21222,50 @@ class Stack {
     });
   }
 
+  takeStack() {
+    _classPrivateFieldGet(this, _controller).doActivateStack({
+      stackId: this.id
+    });
+
+    this.closeMenu();
+  }
+
+  filter() {
+    let criteria = _classPrivateFieldGet(this, _cards).map((_, i) => Object.keys(this.getCard(i).properties)).flat().filter((c, i, a) => a.indexOf(c) === i);
+
+    let criterion = window.prompt("criterion?\ne.g.: " + criteria.join(", "));
+
+    let values = _classPrivateFieldGet(this, _cards).map((_, i) => this.getCard(i).properties[criterion]).filter((c, i, a) => c !== undefined && c !== null && a.indexOf(c) === i);
+
+    let value = window.prompt("value?\ne.g.: " + values.join(", "));
+
+    _classPrivateFieldGet(this, _controller).send({
+      "action": "filterStack",
+      "stackId": this.id,
+      "criterion": criterion,
+      "value": value
+    });
+  }
+
+  merge(where) {
+    _classPrivateFieldGet(this, _controller).send({
+      "action": "mergeStack",
+      "where": where,
+      "movingStack": _classPrivateFieldGet(this, _controller).activeStackId,
+      "stayingStack": this.id
+    });
+
+    this.closeMenu();
+  }
+
+  moveTo(x, y) {
+    _classPrivateFieldGet(this, _menuInteractor).x = x;
+    _classPrivateFieldGet(this, _menuInteractor).y = y;
+    this.sendPosition();
+
+    _classPrivateFieldGet(this, _controller).doDeactivateStack();
+  }
+
 }
 
 exports.Stack = Stack;
@@ -21180,6 +21291,8 @@ var _regularContainer = new WeakMap();
 var _menuInteractor = new WeakMap();
 
 var _menuOpen = new WeakMap();
+
+var _active = new WeakMap();
 
 var _applyPosition = new WeakSet();
 
@@ -21209,6 +21322,10 @@ exports.View = void 0;
 var _namespaces = require("./namespaces.js");
 
 var _SVGInteractor = require("./SVGInteractor.js");
+
+var _coordinateTransform = _interopRequireDefault(require("./coordinateTransform.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classPrivateMethodGet(receiver, privateSet, fn) { if (!privateSet.has(receiver)) { throw new TypeError("attempted to get private field on non-instance"); } return fn; }
 
@@ -21282,7 +21399,9 @@ class View {
       "scale": true
     }));
 
-    _classPrivateFieldGet(this, _interactor).scale = 1 / 200;
+    _classPrivateFieldGet(this, _interactor).scale = 1 / 2000;
+
+    _classPrivateFieldGet(this, _mainBg).addEventListener("click", this.onclick.bind(this));
   }
 
   get defs() {
@@ -21295,6 +21414,19 @@ class View {
 
   get UILayer() {
     return _classPrivateFieldGet(this, _UILayer);
+  }
+
+  onclick(evt) {
+    if (_classPrivateFieldGet(this, _controller).activeStackId) {
+      let stack = _classPrivateFieldGet(this, _controller).getStack(_classPrivateFieldGet(this, _controller).activeStackId);
+
+      let {
+        x,
+        y
+      } = _coordinateTransform.default.point.screenToSvg(_classPrivateFieldGet(this, _container), evt.x, evt.y);
+
+      stack.moveTo(x, y);
+    }
   }
 
 }
@@ -21347,7 +21479,7 @@ var _applyPosition2 = function _applyPosition2(position) {
 
   _classPrivateFieldGet(this, _UIBg).setAttribute("height", 1 / scale);
 };
-},{"./namespaces.js":"ASQA","./SVGInteractor.js":"Uq8D"}],"Jfq0":[function(require,module,exports) {
+},{"./namespaces.js":"ASQA","./SVGInteractor.js":"Uq8D","./coordinateTransform.js":"HjbV"}],"Jfq0":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21465,6 +21597,12 @@ class Controller {
           break;
         }
 
+      case "activateStack":
+        {
+          this.doActivateStack(message);
+          break;
+        }
+
       default:
         {
           alert("unknown message");
@@ -21504,20 +21642,42 @@ class Controller {
   }
 
   doMoveStack(message) {
-    this.stacks.find(stack => stack.id === message.stackId).move(message);
+    this.getStack(message.stackId).move(message);
   }
 
   doUpdateStack(message) {
-    this.stacks.find(stack => stack.id === message.stackId).update(message);
+    this.getStack(message.stackId).update(message);
   }
 
   doDeleteStack(message) {
-    let stack = this.stacks.splice(this.stacks.findIndex(stack => stack.id === message.stackId), 1)[0];
-    stack.destroy();
+    this.getStack(message.stackId).destroy();
+    this.stacks.splice(this.stacks.findIndex(stack => stack.id === message.stackId), 1)[0];
+  }
+
+  doActivateStack(message) {
+    this.stacks.forEach(stack => stack.closeMenu());
+
+    if (this.activeStackId !== null) {
+      this.getStack(this.activeStackId).deactivate();
+    }
+
+    this.activeStackId = message.stackId;
+    this.getStack(this.activeStackId).activate();
+  }
+
+  doDeactivateStack() {
+    if (this.activeStackId !== null) {
+      this.getStack(this.activeStackId).deactivate();
+      this.activeStackId = null;
+    }
   }
 
   getDeck(deckId) {
     return this.decks.find(deck => deck.id == deckId);
+  }
+
+  getStack(stackId) {
+    return this.stacks.find(stack => stack.id === stackId);
   }
 
   send(message) {
@@ -21547,4 +21707,4 @@ var _Controller = require("./Controller.js");
 
 window.controller = new _Controller.Controller((document.location.protocol === "https:" ? "wss://" : "ws://") + document.location.host, document.querySelector("svg.CardsContainer"));
 },{"./Controller.js":"Jfq0"}]},{},["mpVp"], null)
-//# sourceMappingURL=/client/dist/script.d2d311d6.js.map
+//# sourceMappingURL=/client/dist/script.e0d1b055.js.map
