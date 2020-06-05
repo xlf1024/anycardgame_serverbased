@@ -3,7 +3,7 @@ import Hammer from "@egjs/hammerjs";
 
 export class SVGInteractor{
 	#callback;
-	#elements;
+	#element;
 	#x=0;
 	#dx=0;
 	#y=0;
@@ -12,12 +12,12 @@ export class SVGInteractor{
 	#dalpha=0;
 	#scale=1;
 	#dscale=1;
-	#hammers;
+	#hammer;
 	#options;
 	#onmoveend;
 	
-	constructor(elements, callback, options, onmoveend){
-		this.#elements = [elements].flat();
+	constructor(element, callback, options, onmoveend){
+		this.#element = element;
 		this.#callback = callback;
 		this.#options = options;
 		this.#onmoveend = onmoveend || (()=>{});
@@ -36,26 +36,22 @@ export class SVGInteractor{
 			if(true || options.scale) requireFailure.push("pinch");
 			recognizers.push([Hammer.Pan, {}, [], requireFailure]);
 		}
-		this.#hammers = this.#elements.map(element =>{
-			let hammer = new Hammer(element,{recognizers});
+		this.#hammer = new Hammer(element,{recognizers});
 		
-			if(options.pan){
-				hammer.on("panmove",this.onpanmove.bind(this));
-				hammer.on("panend",this.onpanend.bind(this));
-			}
-			if(options.rotate){
-				hammer.on("rotatemove",this.onrotatemove.bind(this));
-				hammer.on("rotateend",this.onrotateend.bind(this));
-			}
-			if(options.scale){
-				hammer.on("pinchmove",this.onpinchmove.bind(this));
-				hammer.on("pinchend",this.onpinchend.bind(this));
-			}
-			
-			element.addEventListener("wheel", this.onwheel.bind(this), {capture:true, passive:false});
-			 
-			return hammer;
-		});
+		if(options.pan){
+			this.#hammer.on("panmove",this.onpanmove.bind(this));
+			this.#hammer.on("panend",this.onpanend.bind(this));
+		}
+		if(options.rotate){
+			this.#hammer.on("rotatemove",this.onrotatemove.bind(this));
+			this.#hammer.on("rotateend",this.onrotateend.bind(this));
+		}
+		if(options.scale){
+			this.#hammer.on("pinchmove",this.onpinchmove.bind(this));
+			this.#hammer.on("pinchend",this.onpinchend.bind(this));
+		}
+		
+		this.#element.addEventListener("wheel", this.onwheel.bind(this), {capture:true, passive:false});
 	}
 	
 	apply(){
@@ -77,7 +73,7 @@ export class SVGInteractor{
 	set scale(scale){this.#scale = scale; this.apply();}
 	
 	onpanmove(evt){
-		let svgDeltaVec = coordinateTransform.distance.screenToSvg(evt.currentTarget, evt.deltaX, evt.deltaY);
+		let svgDeltaVec = coordinateTransform.distance.screenToSvg(this.#element, evt.deltaX, evt.deltaY);
 		this.#dx = svgDeltaVec.x;
 		this.#dy = svgDeltaVec.y;
 		this.apply();
@@ -144,7 +140,7 @@ export class SVGInteractor{
 		}else{
 			[dx,dy,dz]=[evt.deltaX,evt.deltaY,evt.deltaZ];
 		}
-		let {x,y}=coordinateTransform.distance.screenToSvg(evt.currentTarget, dx*factor,dy*factor);
+		let {x,y}=coordinateTransform.distance.screenToSvg(this.#element, dx*factor,dy*factor);
 		if(this.#options.pan) this.#x += x;
 		if(this.#options.pan) this.#y += y;
 		if(this.#options.scale)this.#scale /= Math.exp(dz*factor/512);

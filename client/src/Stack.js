@@ -1,6 +1,7 @@
 import {SVGNS} from "./namespaces.js"
 import coordinateTransform from "./coordinateTransform.js"
 import {SVGInteractor} from "./SVGInteractor.js"
+import {v4 as uuid} from "uuid";
 const drawAll = false;
 export class Stack{
 	#id;
@@ -140,6 +141,10 @@ export class Stack{
 		createOption("Reverse", (evt)=>this.reverse());
 		createOption("Flip", (evt)=>this.flip());
 		createOption("Filter", (evt)=>this.filter());
+		createOption("ViewTops", (evt)=>this.view(open => open));
+		createOption("ViewBottoms", (evt)=>this.view(open => !open));
+		createOption("ViewFronts", (evt)=>this.view(open => true));
+		createOption("ViewBacks", (evt)=>this.view(open => false));
 		
 	}
 	prepareMenu(){
@@ -256,5 +261,39 @@ export class Stack{
 		this.#menuInteractor.y = y;
 		this.sendPosition();
 		this.#controller.doDeactivateStack();
+	}
+	
+	view(faceDecider){
+		let stackPreviewFlow = document.createElementNS(SVGNS, "foreignObject");
+		for(let i = 0; i < this.#cards.length; i++){
+			let cardDescription = this.getCard(i);
+			let face = cardDescription[faceDecider(this.#cards[i].open) ? "front" : "back"];
+			let faceEL = face.forSVG();
+			
+			let cardContainer = document.createElementNS(SVGNS, "svg");
+			let cardDefs = document.createElementNS(SVGNS, "defs");
+			let cardUse = document.createElementNS(SVGNS, "use");
+			let cardG = document.createElementNS(SVGNS, "g");
+			
+			let id = `card-${this.id}-${i}`
+			cardG.setAttribute("id", id);
+			
+			cardUse.setAttribute("href", `#${id}`);
+			cardUse.setAttribute("x","0");
+			cardUse.setAttribute("y","0");
+			
+			faceEL.setAttribute("x","0");
+			faceEL.setAttribute("y","0");
+			cardContainer.setAttribute("viewBox", `0 0 ${cardDescription.width} ${cardDescription.height}`);
+			cardContainer.setAttribute("style", `--width:${cardDescription.width}px; --height:${cardDescription.height}px`);
+			
+			cardG.appendChild(faceEL);
+			cardDefs.appendChild(cardG);
+			cardContainer.appendChild(cardDefs);
+			cardContainer.appendChild(cardUse);
+			stackPreviewFlow.appendChild(cardContainer)
+		}
+		this.#view.stackPreviewContainer.appendChild(stackPreviewFlow);
+		this.#view.scaleStackPreview();
 	}
 }

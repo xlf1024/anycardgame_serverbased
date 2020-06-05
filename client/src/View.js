@@ -11,7 +11,8 @@ export class View{
 	#UIBg;
 	#interactor;
 	#controller;
-	#deckPreviewContainer;
+	#stackPreviewContainer;
+	#stackPreviewInteractor;
 	
 	constructor(controller, container){
 		this.#controller = controller;
@@ -29,16 +30,22 @@ export class View{
 		
 		this.#UIBg = container.querySelector(".UIBg");
 		
-		this.#deckPreviewContainer = container.querySelector(".DeckPreview");
+		this.#stackPreviewContainer = document.querySelector(".StackPreviewContainer");
 		
 		this.#interactor = new SVGInteractor(this.#mainLayer, this.#applyPosition.bind(this), {"pan":true, "rotate":true, "scale":true});
 		this.#interactor.scale = 1/2000;
 		this.#mainBg.addEventListener("click", this.onclick.bind(this));
+		
+		this.#stackPreviewInteractor = new SVGInteractor(this.#stackPreviewContainer, this.scaleStackPreview.bind(this),{"pan":false, "rotate":false, "scale":true});
+		this.#stackPreviewInteractor.scale = 1;
+		
+		this.#stackPreviewContainer.addEventListener("click", evt=>{this.#stackPreviewContainer.innerHTML = ""});
 	}
 	
 	get defs(){return this.#defs;}
 	get mainLayer(){return this.#mainLayer;}
 	get UILayer(){return this.#UILayer;}
+	get stackPreviewContainer(){return this.#stackPreviewContainer;}
 	
 	#applyPosition(position){
 		let {x,y,alpha,scale} = position;
@@ -60,5 +67,13 @@ export class View{
 			let {x,y} = coordinateTransform.point.screenToSvg(this.#container, evt.x, evt.y);
 			stack.moveTo(x,y);
 		}
+	}
+	
+	scaleStackPreview(){
+		let scale = this.#stackPreviewInteractor.scale;
+		let pxWidth = this.#stackPreviewContainer.clientWidth;
+		let pxHeight = this.#stackPreviewContainer.clientHeight;
+		this.#stackPreviewContainer.setAttribute("viewBox", `0 0 ${pxWidth/scale} ${pxHeight/scale}`);
+		this.#stackPreviewContainer.setAttribute("style", `--width: ${pxWidth/scale}px; --height: ${pxHeight/scale}px`);
 	}
 }
