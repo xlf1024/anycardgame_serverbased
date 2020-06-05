@@ -11,6 +11,7 @@ export class View{
 	#UIBg;
 	#interactor;
 	#controller;
+	#deckPreviewContainer;
 	
 	constructor(controller, container){
 		this.#controller = controller;
@@ -27,6 +28,8 @@ export class View{
 		this.#UILayer = container.querySelector(".UILayer");
 		
 		this.#UIBg = container.querySelector(".UIBg");
+		
+		this.#deckPreviewContainer = container.querySelector(".DeckPreview");
 		
 		this.#interactor = new SVGInteractor(this.#mainLayer, this.#applyPosition.bind(this), {"pan":true, "rotate":true, "scale":true});
 		this.#interactor.scale = 1/2000;

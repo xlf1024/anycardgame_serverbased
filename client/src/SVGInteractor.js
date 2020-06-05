@@ -77,7 +77,7 @@ export class SVGInteractor{
 	set scale(scale){this.#scale = scale; this.apply();}
 	
 	onpanmove(evt){
-		let svgDeltaVec = coordinateTransform.distance.screenToSvg(evt.target, evt.deltaX, evt.deltaY);
+		let svgDeltaVec = coordinateTransform.distance.screenToSvg(evt.currentTarget, evt.deltaX, evt.deltaY);
 		this.#dx = svgDeltaVec.x;
 		this.#dy = svgDeltaVec.y;
 		this.apply();
@@ -144,7 +144,7 @@ export class SVGInteractor{
 		}else{
 			[dx,dy,dz]=[evt.deltaX,evt.deltaY,evt.deltaZ];
 		}
-		let {x,y}=coordinateTransform.distance.screenToSvg(evt.target, dx*factor,dy*factor);
+		let {x,y}=coordinateTransform.distance.screenToSvg(evt.currentTarget, dx*factor,dy*factor);
 		if(this.#options.pan) this.#x += x;
 		if(this.#options.pan) this.#y += y;
 		if(this.#options.scale)this.#scale /= Math.exp(dz*factor/512);
