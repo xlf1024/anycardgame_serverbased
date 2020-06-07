@@ -17468,7 +17468,7 @@ async function loadFace(image, template, type, replacements, fileBlobs) {
   // retuns the card face as a blob URL
   if (image) return {
     URL: fileBlobs[image],
-    type: "image"
+    type: type || "image"
   };
 
   if (template) {
@@ -17522,4 +17522,4 @@ fileinput.addEventListener("change", evt => {
   });
 });
 },{"./namespaces.js":"ASQA","./loadDeck.js":"Ld0F"}]},{},["ckwZ"], null)
-//# sourceMappingURL=/client/dist/cardLoadTest.1575b02d.js.map
+//# sourceMappingURL=/client/dist/cardLoadTest.b94042c4.js.map

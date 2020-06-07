@@ -17468,7 +17468,7 @@ async function loadFace(image, template, type, replacements, fileBlobs) {
   // retuns the card face as a blob URL
   if (image) return {
     URL: fileBlobs[image],
-    type: "image"
+    type: type || "image"
   };
 
   if (template) {
@@ -22473,4 +22473,4 @@ var _Controller = require("./Controller.js");
 
 window.controller = new _Controller.Controller((document.location.protocol === "https:" ? "wss://" : "ws://") + document.location.host, document.querySelector("svg.CardsContainer"));
 },{"./Controller.js":"Jfq0"}]},{},["mpVp"], null)
-//# sourceMappingURL=/client/dist/script.1d7cb61e.js.map
+//# sourceMappingURL=/client/dist/script.2ea6771d.js.map
