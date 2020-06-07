@@ -39,7 +39,7 @@ async function loadCard(columns, replacements, fileBlobs){
 	return new CardDescription(front.URL, front.type, back.URL, back.type, replacements.$width, replacements.$height, replacements);
 }
 async function loadFace(image, template, type, replacements, fileBlobs){ // retuns the card face as a blob URL
-	if(image) return {URL: fileBlobs[image], type:"image"};
+	if(image) return {URL: fileBlobs[image], type:type || "image"};
 	if(template){
 		let templateString = await fetch(fileBlobs[template]).then(res => res.text()); //fetch from blob url;
 		for (let column in replacements){
