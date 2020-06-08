@@ -22390,6 +22390,7 @@ class Controller {
     let file = await fetch(message.file).then(res => res.blob());
     this.decks.push(await (0, _loadDeck.loadDeckFromZip)(message.deckId, file));
     this.inBlockLevel--;
+    this.handleMessages();
   }
 
   doDeleteDeck(message) {
@@ -22473,4 +22474,4 @@ var _Controller = require("./Controller.js");
 
 window.controller = new _Controller.Controller((document.location.protocol === "https:" ? "wss://" : "ws://") + document.location.host, document.querySelector("svg.CardsContainer"));
 },{"./Controller.js":"Jfq0"}]},{},["mpVp"], null)
-//# sourceMappingURL=/client/dist/script.2ea6771d.js.map
+//# sourceMappingURL=/client/dist/script.12da00b8.js.map

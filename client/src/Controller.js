@@ -104,6 +104,7 @@ export class Controller{
 		let file = await fetch(message.file).then(res => res.blob());
 		this.decks.push(await loadDeckFromZip(message.deckId, file));
 		this.inBlockLevel--;
+		this.handleMessages();
 	}
 	
 	doDeleteDeck(message){
