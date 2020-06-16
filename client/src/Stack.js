@@ -271,26 +271,14 @@ export class Stack{
 			let faceEL = face.forSVG();
 			
 			let cardContainer = document.createElementNS(SVGNS, "svg");
-			let cardDefs = document.createElementNS(SVGNS, "defs");
-			let cardUse = document.createElementNS(SVGNS, "use");
-			let cardG = document.createElementNS(SVGNS, "g");
 			
-			let id = `card-${this.id}-${i}`
-			cardG.setAttribute("id", id);
 			
-			cardUse.setAttribute("href", `#${id}`);
-			cardUse.setAttribute("x","0");
-			cardUse.setAttribute("y","0");
-			
-			faceEL.setAttribute("x","0");
-			faceEL.setAttribute("y","0");
+			faceEL.setAttribute("x",0.5 * cardDescription.width);
+			faceEL.setAttribute("y",0.5 * cardDescription.height);
 			cardContainer.setAttribute("viewBox", `0 0 ${cardDescription.width} ${cardDescription.height}`);
 			cardContainer.setAttribute("style", `--width:${cardDescription.width}px; --height:${cardDescription.height}px`);
 			
-			cardG.appendChild(faceEL);
-			cardDefs.appendChild(cardG);
-			cardContainer.appendChild(cardDefs);
-			cardContainer.appendChild(cardUse);
+			cardContainer.appendChild(faceEL);
 			stackPreviewFlow.appendChild(cardContainer)
 		}
 		this.#view.stackPreviewContainer.appendChild(stackPreviewFlow);

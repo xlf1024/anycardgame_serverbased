@@ -17203,7 +17203,7 @@ function _classPrivateFieldGet(receiver, privateMap) { var descriptor = privateM
 function _classPrivateFieldSet(receiver, privateMap, value) { var descriptor = privateMap.get(receiver); if (!descriptor) { throw new TypeError("attempted to set private field on non-instance"); } if (descriptor.set) { descriptor.set.call(receiver, value); } else { if (!descriptor.writable) { throw new TypeError("attempted to set read only private field"); } descriptor.value = value; } return value; }
 
 class CardDescription {
-  constructor(frontURL, frontType, backURL, backType, width, height, properties) {
+  constructor(frontURL, backURL, width, height, properties) {
     _width.set(this, {
       writable: true,
       value: void 0
@@ -17235,9 +17235,9 @@ class CardDescription {
 
     _classPrivateFieldSet(this, _properties, Object.freeze(properties));
 
-    _classPrivateFieldSet(this, _front, new CardFaceDescription(frontURL, frontType, this));
+    _classPrivateFieldSet(this, _front, new CardFaceDescription(frontURL, this));
 
-    _classPrivateFieldSet(this, _back, new CardFaceDescription(backURL, backType, this));
+    _classPrivateFieldSet(this, _back, new CardFaceDescription(backURL, this));
 
     console.log(this);
   }
@@ -17277,7 +17277,7 @@ var _back = new WeakMap();
 var _properties = new WeakMap();
 
 class CardFaceDescription {
-  constructor(src, type, card) {
+  constructor(src, card) {
     _src.set(this, {
       writable: true,
       value: void 0
@@ -17288,24 +17288,17 @@ class CardFaceDescription {
       value: void 0
     });
 
-    _type.set(this, {
-      writable: true,
-      value: void 0
-    });
-
     _classPrivateFieldSet(this, _src, src);
 
     _classPrivateFieldSet(this, _card, card);
-
-    _classPrivateFieldSet(this, _type, type);
   }
 
   forSVG() {
-    return _classPrivateFieldGet(this, _type) === "html" ? this.toForeignObject() : this.toSVGImageElement();
+    return this.toSVGImageElement();
   }
 
   forHTML() {
-    return _classPrivateFieldGet(this, _type) === "html" ? this.toIFrame() : this.toHTMLImgElement();
+    return this.toHTMLImgElement();
   }
 
   toSVGImageElement() {
@@ -17313,8 +17306,8 @@ class CardFaceDescription {
     imageEl.setAttribute("href", _classPrivateFieldGet(this, _src));
     imageEl.setAttribute("width", _classPrivateFieldGet(this, _card).width.toString());
     imageEl.setAttribute("height", _classPrivateFieldGet(this, _card).height.toString());
-    imageEl.setAttribute("x", (-0.5 * _classPrivateFieldGet(this, _card).height).toString());
-    imageEl.setAttribute("y", (-0.5 * _classPrivateFieldGet(this, _card).width).toString());
+    imageEl.setAttribute("x", (-0.5 * _classPrivateFieldGet(this, _card).width).toString());
+    imageEl.setAttribute("y", (-0.5 * _classPrivateFieldGet(this, _card).height).toString());
     return imageEl;
   }
 
@@ -17327,36 +17320,11 @@ class CardFaceDescription {
     return imgEl;
   }
 
-  toForeignObject() {
-    let foreignObject = document.createElementNS(_namespaces.SVGNS, "foreignObject");
-    foreignObject.setAttribute("width", _classPrivateFieldGet(this, _card).width.toString());
-    foreignObject.setAttribute("height", _classPrivateFieldGet(this, _card).height.toString());
-    foreignObject.setAttribute("y", (-0.5 * _classPrivateFieldGet(this, _card).height).toString());
-    foreignObject.setAttribute("x", (-0.5 * _classPrivateFieldGet(this, _card).width).toString());
-    foreignObject.appendChild(this.toIFrame());
-    return foreignObject;
-  }
-
-  toIFrame() {
-    let iframe = document.createElementNS(_namespaces.HTMLNS, "iframe");
-    iframe.setAttribute("width", _classPrivateFieldGet(this, _card).width);
-    iframe.setAttribute("height", _classPrivateFieldGet(this, _card).height);
-    iframe.setAttribute("src", _classPrivateFieldGet(this, _src));
-    iframe.setAttribute("referrerpolicy", "no-referrer");
-    iframe.setAttribute("sandbox", "allow-same-origin");
-    iframe.setAttribute("csp", "default-src blob: data:");
-    iframe.style.pointerEvents = "none";
-    iframe.style.border = "none";
-    return iframe;
-  }
-
 }
 
 var _src = new WeakMap();
 
 var _card = new WeakMap();
-
-var _type = new WeakMap();
 },{"./namespaces.js":"ASQA"}],"gHo7":[function(require,module,exports) {
 "use strict";
 
@@ -17442,7 +17410,39 @@ async function loadDeckFromZip(id, source) {
   let fileBlobs = {};
   let filePromises = [];
   zip.forEach((path, file) => {
-    filePromises.push(file.async("blob").then(blob => fileBlobs[path] = URL.createObjectURL(blob)));
+    filePromises.push(file.async(path.endsWith(".html") || path.endsWith(".xhtml") ? "text" : "arraybuffer").then(data => {
+      let blob;
+
+      switch (true) {
+        case path.endsWith(".svg"):
+          {
+            //svgs are only displayed in <image> elements if they have the correct mime type
+            blob = new Blob([data], {
+              "type": "image/svg+xml"
+            });
+            break;
+          }
+
+        case path.endsWith(".html") || path.endsWith(".xhtml"):
+          {
+            //html can't be displayed in <image>, <iframe> is too expensive preformance-wise, and inlining would allow for script injection
+            //however, html can be included in svg's foreignObject, which can be displayed
+            data = data.replace(/^\<\![^\>]*\>/, ""); //remove <!DOCTYPE...> (not valid xml)
+
+            blob = new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n', '<svg:svg width="{{$width}}" height="{{$height}}" version="1.1" viewBox="0 0 {{$width}} {{$height}}" xml:space="preserve" xmlns:svg="http://www.w3.org/2000/svg"> xmlns="http://www.w3.org/1999/xhtml"', '<svg:foreignObject x="0" y="0" width="{{$width}}" height="{{$height}}" xmlns="http://www.w3.org/1999/xhtml">', data, '</svg:foreignObject>', '</svg:svg>'], {
+              "type": "image/svg+xml"
+            });
+            break;
+          }
+
+        default:
+          {
+            blob = new Blob([data]);
+          }
+      }
+
+      fileBlobs[path] = URL.createObjectURL(blob);
+    }));
   });
   let csvText = "";
   filePromises.push(zip.file("cards.csv").async("string").then(string => csvText = string));
@@ -17460,16 +17460,13 @@ async function loadDeckFromZip(id, source) {
 
 async function loadCard(columns, replacements, fileBlobs) {
   columns.forEach(column => replacements[column] = replacements[column] || "");
-  const [front, back] = await Promise.all([loadFace(replacements.$frontImage, replacements.$frontTemplate, replacements.$frontType, replacements, fileBlobs), loadFace(replacements.$backImage, replacements.$backTemplate, replacements.$backType, replacements, fileBlobs)]);
-  return new _CardDescription.CardDescription(front.URL, front.type, back.URL, back.type, replacements.$width, replacements.$height, replacements);
+  const [front, back] = await Promise.all([loadFace(replacements.$frontImage, replacements.$frontTemplate, replacements, fileBlobs), loadFace(replacements.$backImage, replacements.$backTemplate, replacements, fileBlobs)]);
+  return new _CardDescription.CardDescription(front, back, replacements.$width, replacements.$height, replacements);
 }
 
-async function loadFace(image, template, type, replacements, fileBlobs) {
+async function loadFace(image, template, replacements, fileBlobs) {
   // retuns the card face as a blob URL
-  if (image) return {
-    URL: fileBlobs[image],
-    type: type || "image"
-  };
+  if (image) return fileBlobs[image];
 
   if (template) {
     let templateString = await fetch(fileBlobs[template]).then(res => res.text()); //fetch from blob url;
@@ -17480,19 +17477,17 @@ async function loadFace(image, template, type, replacements, fileBlobs) {
       templateString = templateString.split("{{" + column + "}}").join(value);
     }
 
-    return {
-      URL: URL.createObjectURL(new Blob([templateString])),
-      type: type || "image"
-    };
+    return URL.createObjectURL(new Blob([templateString], {
+      "type": "image/svg+xml"
+    }));
   }
 
   return failedFace;
 }
 
-const failedFace = {
-  URL: URL.createObjectURL(new Blob(["neither image nor template were specified."])),
-  type: "html"
-};
+const failedFace = URL.createObjectURL(new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><rect x="0" y="0" width="1" height="1" fill="red"/></svg>'], {
+  "type": "image/svg+xml"
+}));
 },{"jszip":"zl0j","papaparse":"g2Wo","./CardDescription.js":"JTA7","./DeckDescription.js":"gHo7"}],"HjbV":[function(require,module,exports) {
 "use strict";
 
@@ -21958,22 +21953,11 @@ class Stack {
       let face = cardDescription[faceDecider(_classPrivateFieldGet(this, _cards)[i].open) ? "front" : "back"];
       let faceEL = face.forSVG();
       let cardContainer = document.createElementNS(_namespaces.SVGNS, "svg");
-      let cardDefs = document.createElementNS(_namespaces.SVGNS, "defs");
-      let cardUse = document.createElementNS(_namespaces.SVGNS, "use");
-      let cardG = document.createElementNS(_namespaces.SVGNS, "g");
-      let id = `card-${this.id}-${i}`;
-      cardG.setAttribute("id", id);
-      cardUse.setAttribute("href", `#${id}`);
-      cardUse.setAttribute("x", "0");
-      cardUse.setAttribute("y", "0");
-      faceEL.setAttribute("x", "0");
-      faceEL.setAttribute("y", "0");
+      faceEL.setAttribute("x", 0.5 * cardDescription.width);
+      faceEL.setAttribute("y", 0.5 * cardDescription.height);
       cardContainer.setAttribute("viewBox", `0 0 ${cardDescription.width} ${cardDescription.height}`);
       cardContainer.setAttribute("style", `--width:${cardDescription.width}px; --height:${cardDescription.height}px`);
-      cardG.appendChild(faceEL);
-      cardDefs.appendChild(cardG);
-      cardContainer.appendChild(cardDefs);
-      cardContainer.appendChild(cardUse);
+      cardContainer.appendChild(faceEL);
       stackPreviewFlow.appendChild(cardContainer);
     }
 
@@ -22103,6 +22087,11 @@ class View {
       value: void 0
     });
 
+    _notificationBox.set(this, {
+      writable: true,
+      value: void 0
+    });
+
     _classPrivateFieldSet(this, _controller, controller);
 
     _classPrivateFieldSet(this, _container, container);
@@ -22121,13 +22110,15 @@ class View {
 
     _classPrivateFieldSet(this, _stackPreviewContainer, document.querySelector(".StackPreviewContainer"));
 
+    _classPrivateFieldSet(this, _notificationBox, document.querySelector(".Notifications"));
+
     _classPrivateFieldSet(this, _interactor, new _SVGInteractor.SVGInteractor(_classPrivateFieldGet(this, _mainLayer), _classPrivateMethodGet(this, _applyPosition, _applyPosition2).bind(this), {
       "pan": true,
       "rotate": true,
       "scale": true
     }));
 
-    _classPrivateFieldGet(this, _interactor).scale = 1 / 2000;
+    _classPrivateFieldGet(this, _interactor).scale = 1;
 
     _classPrivateFieldGet(this, _mainBg).addEventListener("click", this.onclick.bind(this));
 
@@ -22160,6 +22151,10 @@ class View {
     return _classPrivateFieldGet(this, _stackPreviewContainer);
   }
 
+  get notificationBox() {
+    return _classPrivateFieldGet(this, _notificationBox);
+  }
+
   onclick(evt) {
     if (_classPrivateFieldGet(this, _controller).activeStackId) {
       let stack = _classPrivateFieldGet(this, _controller).getStack(_classPrivateFieldGet(this, _controller).activeStackId);
@@ -22176,9 +22171,9 @@ class View {
   scaleStackPreview() {
     let scale = _classPrivateFieldGet(this, _stackPreviewInteractor).scale;
 
-    let pxWidth = _classPrivateFieldGet(this, _stackPreviewContainer).clientWidth;
+    let pxWidth = window.innerWidth; //this.#stackPreviewContainer.clientWidth;
 
-    let pxHeight = _classPrivateFieldGet(this, _stackPreviewContainer).clientHeight;
+    let pxHeight = window.innerHeight; //this.#stackPreviewContainer.clientHeight;
 
     _classPrivateFieldGet(this, _stackPreviewContainer).setAttribute("viewBox", `0 0 ${pxWidth / scale} ${pxHeight / scale}`);
 
@@ -22209,6 +22204,8 @@ var _stackPreviewContainer = new WeakMap();
 
 var _stackPreviewInteractor = new WeakMap();
 
+var _notificationBox = new WeakMap();
+
 var _applyPosition = new WeakSet();
 
 var _applyPosition2 = function _applyPosition2(position) {
@@ -22218,26 +22215,29 @@ var _applyPosition2 = function _applyPosition2(position) {
     alpha,
     scale
   } = position;
+  let svgsize = _classPrivateFieldGet(this, _container).clientWidth / scale;
 
-  _classPrivateFieldGet(this, _container).setAttribute("viewBox", `${-x - 0.5 / scale} ${-y - 0.5 / scale} ${1 / scale} ${1 / scale}`);
+  _classPrivateFieldGet(this, _container).setAttribute("viewBox", `${-x - 0.5 * svgsize} ${-y - 0.5 * svgsize} ${1 * svgsize} ${1 * svgsize}`);
 
   _classPrivateFieldGet(this, _container).setAttribute("transform", `rotate(${alpha})`);
 
-  _classPrivateFieldGet(this, _mainBg).setAttribute("x", -x - 0.5 / scale);
+  _classPrivateFieldGet(this, _mainBg).setAttribute("x", -x - 0.5 * svgsize);
 
-  _classPrivateFieldGet(this, _mainBg).setAttribute("y", -y - 0.5 / scale);
+  _classPrivateFieldGet(this, _mainBg).setAttribute("y", -y - 0.5 * svgsize);
 
-  _classPrivateFieldGet(this, _mainBg).setAttribute("width", 1 / scale);
+  _classPrivateFieldGet(this, _mainBg).setAttribute("width", 1 * svgsize);
 
-  _classPrivateFieldGet(this, _mainBg).setAttribute("height", 1 / scale);
+  _classPrivateFieldGet(this, _mainBg).setAttribute("height", 1 * svgsize);
 
-  _classPrivateFieldGet(this, _UIBg).setAttribute("x", -x - 0.5 / scale);
+  _classPrivateFieldGet(this, _UIBg).setAttribute("x", -x - 0.5 * svgsize);
 
-  _classPrivateFieldGet(this, _UIBg).setAttribute("y", -y - 0.5 / scale);
+  _classPrivateFieldGet(this, _UIBg).setAttribute("y", -y - 0.5 * svgsize);
 
-  _classPrivateFieldGet(this, _UIBg).setAttribute("width", 1 / scale);
+  _classPrivateFieldGet(this, _UIBg).setAttribute("width", 1 * svgsize);
 
-  _classPrivateFieldGet(this, _UIBg).setAttribute("height", 1 / scale);
+  _classPrivateFieldGet(this, _UIBg).setAttribute("height", 1 * svgsize);
+
+  if (_classPrivateFieldGet(this, _stackPreviewInteractor)) _classPrivateFieldGet(this, _stackPreviewInteractor).scale = scale;
 };
 },{"./namespaces.js":"ASQA","./SVGInteractor.js":"Uq8D","./coordinateTransform.js":"HjbV"}],"Jfq0":[function(require,module,exports) {
 "use strict";
@@ -22474,4 +22474,4 @@ var _Controller = require("./Controller.js");
 
 window.controller = new _Controller.Controller((document.location.protocol === "https:" ? "wss://" : "ws://") + document.location.host, document.querySelector("svg.CardsContainer"));
 },{"./Controller.js":"Jfq0"}]},{},["mpVp"], null)
-//# sourceMappingURL=/client/dist/script.12da00b8.js.map
+//# sourceMappingURL=script.c81eee05.js.map

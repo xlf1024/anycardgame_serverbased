@@ -13,6 +13,7 @@ export class View{
 	#controller;
 	#stackPreviewContainer;
 	#stackPreviewInteractor;
+	#notificationBox;
 	
 	constructor(controller, container){
 		this.#controller = controller;
@@ -32,8 +33,10 @@ export class View{
 		
 		this.#stackPreviewContainer = document.querySelector(".StackPreviewContainer");
 		
+		this.#notificationBox = document.querySelector(".Notifications");
+		
 		this.#interactor = new SVGInteractor(this.#mainLayer, this.#applyPosition.bind(this), {"pan":true, "rotate":true, "scale":true});
-		this.#interactor.scale = 1/2000;
+		this.#interactor.scale = 1;
 		this.#mainBg.addEventListener("click", this.onclick.bind(this));
 		
 		this.#stackPreviewInteractor = new SVGInteractor(this.#stackPreviewContainer, this.scaleStackPreview.bind(this),{"pan":false, "rotate":false, "scale":true});
@@ -46,19 +49,22 @@ export class View{
 	get mainLayer(){return this.#mainLayer;}
 	get UILayer(){return this.#UILayer;}
 	get stackPreviewContainer(){return this.#stackPreviewContainer;}
+	get notificationBox(){return this.#notificationBox;}
 	
 	#applyPosition(position){
 		let {x,y,alpha,scale} = position;
-		this.#container.setAttribute("viewBox", `${- x - 0.5/scale} ${- y - 0.5/scale} ${1/scale} ${1/scale}`);
+		let svgsize = this.#container.clientWidth / scale;
+		this.#container.setAttribute("viewBox", `${- x - 0.5*svgsize} ${- y - 0.5*svgsize} ${1*svgsize} ${1*svgsize}`);
 		this.#container.setAttribute("transform", `rotate(${alpha})`);
-		this.#mainBg.setAttribute("x", - x - 0.5/scale);
-		this.#mainBg.setAttribute("y", - y - 0.5/scale);
-		this.#mainBg.setAttribute("width", 1/scale);
-		this.#mainBg.setAttribute("height", 1/scale);
-		this.#UIBg.setAttribute("x", - x - 0.5/scale);
-		this.#UIBg.setAttribute("y", - y - 0.5/scale);
-		this.#UIBg.setAttribute("width", 1/scale);
-		this.#UIBg.setAttribute("height", 1/scale);
+		this.#mainBg.setAttribute("x", - x - 0.5*svgsize);
+		this.#mainBg.setAttribute("y", - y - 0.5*svgsize);
+		this.#mainBg.setAttribute("width", 1*svgsize);
+		this.#mainBg.setAttribute("height", 1*svgsize);
+		this.#UIBg.setAttribute("x", - x - 0.5*svgsize);
+		this.#UIBg.setAttribute("y", - y - 0.5*svgsize);
+		this.#UIBg.setAttribute("width", 1*svgsize);
+		this.#UIBg.setAttribute("height", 1*svgsize);
+		if(this.#stackPreviewInteractor)this.#stackPreviewInteractor.scale = scale;
 	}
 	
 	onclick(evt){
@@ -71,8 +77,8 @@ export class View{
 	
 	scaleStackPreview(){
 		let scale = this.#stackPreviewInteractor.scale;
-		let pxWidth = this.#stackPreviewContainer.clientWidth;
-		let pxHeight = this.#stackPreviewContainer.clientHeight;
+		let pxWidth = window.innerWidth;//this.#stackPreviewContainer.clientWidth;
+		let pxHeight = window.innerHeight;//this.#stackPreviewContainer.clientHeight;
 		this.#stackPreviewContainer.setAttribute("viewBox", `0 0 ${pxWidth/scale} ${pxHeight/scale}`);
 		this.#stackPreviewContainer.setAttribute("style", `--width: ${pxWidth/scale}px; --height: ${pxHeight/scale}px`);
 	}

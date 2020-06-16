@@ -10,8 +10,35 @@ export async function loadDeckFromZip(id, source){
 	let filePromises = [];
 	zip.forEach((path,file)=>{
 		filePromises.push(
-			file.async("blob")
-				.then(blob => fileBlobs[path] = URL.createObjectURL(blob))
+			file.async((path.endsWith(".html")||path.endsWith(".xhtml"))? "text": "arraybuffer")
+				.then(data  => {
+					let blob;
+					switch(true){
+						case(path.endsWith(".svg")):{
+							//svgs are only displayed in <image> elements if they have the correct mime type
+							blob = new Blob([data],{"type":"image/svg+xml"});
+							break;
+						}
+						case(path.endsWith(".html")||path.endsWith(".xhtml")):{
+							//html can't be displayed in <image>, <iframe> is too expensive preformance-wise, and inlining would allow for script injection
+							//however, html can be included in svg's foreignObject, which can be displayed
+							data = data.replace(/^\<\![^\>]*\>/,""); //remove <!DOCTYPE...> (not valid xml)
+							blob = new Blob([
+								'<?xml version="1.0" encoding="UTF-8"?>\n',
+								'<svg:svg width="{{$width}}" height="{{$height}}" version="1.1" viewBox="0 0 {{$width}} {{$height}}" xml:space="preserve" xmlns:svg="http://www.w3.org/2000/svg"> xmlns="http://www.w3.org/1999/xhtml"',
+								'<svg:foreignObject x="0" y="0" width="{{$width}}" height="{{$height}}" xmlns="http://www.w3.org/1999/xhtml">',
+								data,
+								'</svg:foreignObject>',
+								'</svg:svg>'
+							],{"type":"image/svg+xml"});
+							break;
+						}
+						default:{
+							blob = new Blob([data]);
+						}
+					}
+					fileBlobs[path] = URL.createObjectURL(blob)
+				})
 		);
 	});
 	let csvText = "";
@@ -33,13 +60,13 @@ export async function loadDeckFromZip(id, source){
 async function loadCard(columns, replacements, fileBlobs){
 	columns.forEach(column => replacements[column] = replacements[column] || "");
 	const [front, back] = await Promise.all([
-		loadFace(replacements.$frontImage, replacements.$frontTemplate, replacements.$frontType, replacements, fileBlobs),
-		loadFace(replacements.$backImage, replacements.$backTemplate, replacements.$backType, replacements, fileBlobs)
+		loadFace(replacements.$frontImage, replacements.$frontTemplate, replacements, fileBlobs),
+		loadFace(replacements.$backImage, replacements.$backTemplate, replacements, fileBlobs)
 	]);
-	return new CardDescription(front.URL, front.type, back.URL, back.type, replacements.$width, replacements.$height, replacements);
+	return new CardDescription(front, back, replacements.$width, replacements.$height, replacements);
 }
-async function loadFace(image, template, type, replacements, fileBlobs){ // retuns the card face as a blob URL
-	if(image) return {URL: fileBlobs[image], type:type || "image"};
+async function loadFace(image, template, replacements, fileBlobs){ // retuns the card face as a blob URL
+	if(image) return fileBlobs[image];
 	if(template){
 		let templateString = await fetch(fileBlobs[template]).then(res => res.text()); //fetch from blob url;
 		for (let column in replacements){
@@ -47,8 +74,8 @@ async function loadFace(image, template, type, replacements, fileBlobs){ // retu
 			if(fileBlobs[value])value = fileBlobs[value];
 			templateString = templateString.split("{{"+column+"}}").join(value);
 		}
-		return {URL:URL.createObjectURL(new Blob([templateString])), type: type || "image"};
+		return URL.createObjectURL(new Blob([templateString],{"type":"image/svg+xml"}));
 	}
 	return failedFace;
 }
-const failedFace = {URL:URL.createObjectURL(new Blob(["neither image nor template were specified."])), type:"html"};
+const failedFace = URL.createObjectURL(new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><rect x="0" y="0" width="1" height="1" fill="red"/></svg>'],{"type":"image/svg+xml"}));
