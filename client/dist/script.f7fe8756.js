@@ -21953,8 +21953,8 @@ class Stack {
       let face = cardDescription[faceDecider(_classPrivateFieldGet(this, _cards)[i].open) ? "front" : "back"];
       let faceEL = face.forSVG();
       let cardContainer = document.createElementNS(_namespaces.SVGNS, "svg");
-      faceEL.setAttribute("x", 0.5 * cardDescription.width);
-      faceEL.setAttribute("y", 0.5 * cardDescription.height);
+      faceEL.setAttribute("x", 0);
+      faceEL.setAttribute("y", 0);
       cardContainer.setAttribute("viewBox", `0 0 ${cardDescription.width} ${cardDescription.height}`);
       cardContainer.setAttribute("style", `--width:${cardDescription.width}px; --height:${cardDescription.height}px`);
       cardContainer.appendChild(faceEL);
@@ -22474,4 +22474,4 @@ var _Controller = require("./Controller.js");
 
 window.controller = new _Controller.Controller((document.location.protocol === "https:" ? "wss://" : "ws://") + document.location.host, document.querySelector("svg.CardsContainer"));
 },{"./Controller.js":"Jfq0"}]},{},["mpVp"], null)
-//# sourceMappingURL=script.c81eee05.js.map
+//# sourceMappingURL=script.f7fe8756.js.map

@@ -273,8 +273,8 @@ export class Stack{
 			let cardContainer = document.createElementNS(SVGNS, "svg");
 			
 			
-			faceEL.setAttribute("x",0.5 * cardDescription.width);
-			faceEL.setAttribute("y",0.5 * cardDescription.height);
+			faceEL.setAttribute("x",0);
+			faceEL.setAttribute("y",0);
 			cardContainer.setAttribute("viewBox", `0 0 ${cardDescription.width} ${cardDescription.height}`);
 			cardContainer.setAttribute("style", `--width:${cardDescription.width}px; --height:${cardDescription.height}px`);
 			
