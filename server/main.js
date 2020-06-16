@@ -110,7 +110,8 @@ function atob(base64){
 
 function onHttpUpgrade(request, socket, head){
 	if(!testHttpAuth(request)){
-		socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
+		socket.write('HTTP/1.1 401 Unauthorizeda\r\n');
+		socket.write('WWW-Authenticate: Basic charset="UTF-8"\r\n');
 		socket.destroy();
 		return;
 	}
