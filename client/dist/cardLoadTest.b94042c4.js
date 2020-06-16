@@ -17522,4 +17522,4 @@ fileinput.addEventListener("change", evt => {
   });
 });
 },{"./namespaces.js":"ASQA","./loadDeck.js":"Ld0F"}]},{},["ckwZ"], null)
-//# sourceMappingURL=/client/dist/cardLoadTest.b94042c4.js.map
+//# sourceMappingURL=cardLoadTest.b94042c4.js.map
