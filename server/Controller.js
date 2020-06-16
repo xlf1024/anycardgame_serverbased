@@ -126,7 +126,7 @@ export default class Controller{
 		this.sendActivateStack(newStack, respond);
 	}
 	doDeleteStack(message, respond){
-		let stack = this.stacks.splice(stacks.findIndex(stack => stack.id === message.stackId));
+		let stack = this.stacks.splice(this.stacks.findIndex(stack => stack.id === message.stackId));
 		this.sendDeleteStack(stack);
 	}
 	sendUpdateStack(stack){
