@@ -33,6 +33,9 @@ export default class Controller{
 	getStack(id){
 		return this.stacks.find(stack => stack.id === id);
 	}
+	spliceStack(id){
+		return this.stacks.splice(this.stacks.findIndex(stack => stack.id === id),1)[0];
+	}
 	getDeck(id){
 		return this.decks.find(deck => deck.id === id);
 	}
@@ -70,7 +73,7 @@ export default class Controller{
 	
 	
 	doMoveStack(message, respond){
-		let stack = this.stacks.splice(this.stacks.findIndex(stack => stack.id === message.stackId),1)[0];
+		let stack = this.spliceStack(message.stackId);
 		this.stacks.push(stack);
 		stack.move(message.x, message.y, message.alpha);
 		this.sendMoveStack(stack);
@@ -93,7 +96,7 @@ export default class Controller{
 	}
 	doMergeStack(message, respond){
 		if(message.movingStack == message.stayingStack) return;
-		let movingStack = this.stacks.splice(this.stacks.findIndex(stack => stack.id == message.movingStack),1)[0];
+		let movingStack = this.spliceStack(message.movingStack);
 		let stayingStack = this.getStack(message.stayingStack);
 		stayingStack.merge(movingStack, message.where);
 		this.sendUpdateStack(stayingStack);
@@ -126,7 +129,7 @@ export default class Controller{
 		this.sendActivateStack(newStack, respond);
 	}
 	doDeleteStack(message, respond){
-		let stack = this.stacks.splice(this.stacks.findIndex(stack => stack.id === message.stackId));
+		let stack = this.spliceStack(message.stackId);
 		this.sendDeleteStack(stack);
 	}
 	sendUpdateStack(stack){
