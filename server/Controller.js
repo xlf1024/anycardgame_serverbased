@@ -131,7 +131,7 @@ export default class Controller{
 	}
 	sendUpdateStack(stack){
 		if(stack.cards.length <= 0){
-			doDeleteStack({stackId:stack.id}, ()=>{});
+			this.doDeleteStack({stackId:stack.id}, ()=>{});
 		}else{
 			this.broadcast({
 				mId: ++this.mId,
