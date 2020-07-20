@@ -1,7 +1,7 @@
 import {SVGNS} from "./namespaces.js"
 import coordinateTransform from "./coordinateTransform.js"
 import {SVGInteractor} from "./SVGInteractor.js"
-import {v4 as uuid} from "uuid";
+//import {v4 as uuid} from "uuid";
 const drawAll = false;
 export class Stack{
 	#id;
