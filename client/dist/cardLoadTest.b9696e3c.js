@@ -8195,7 +8195,7 @@ for(var i = 0; i < removedMethods.length; i++) {
 }
 module.exports = ZipObject;
 
-},{"./stream/StreamHelper":"kThO","./stream/DataWorker":"PGhO","./utf8":"EHG9","./compressedObject":"DXXB","./stream/GenericWorker":"HHN4"}],"E35G":[function(require,module,exports) {
+},{"./stream/StreamHelper":"kThO","./stream/DataWorker":"PGhO","./utf8":"EHG9","./compressedObject":"DXXB","./stream/GenericWorker":"HHN4"}],"kQw7":[function(require,module,exports) {
 'use strict';
 
 
@@ -8302,7 +8302,7 @@ exports.setTyped = function (on) {
 
 exports.setTyped(TYPED_OK);
 
-},{}],"P3Np":[function(require,module,exports) {
+},{}],"gg6r":[function(require,module,exports) {
 'use strict';
 
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
@@ -9526,7 +9526,7 @@ exports._tr_flush_block  = _tr_flush_block;
 exports._tr_tally = _tr_tally;
 exports._tr_align = _tr_align;
 
-},{"../utils/common":"E35G"}],"kXBC":[function(require,module,exports) {
+},{"../utils/common":"kQw7"}],"MOI4":[function(require,module,exports) {
 'use strict';
 
 // Note: adler32 takes 12% for level 0 and 2% for level 6.
@@ -9579,7 +9579,7 @@ function adler32(adler, buf, len, pos) {
 
 module.exports = adler32;
 
-},{}],"I79J":[function(require,module,exports) {
+},{}],"o0gx":[function(require,module,exports) {
 'use strict';
 
 // Note: we can't get significant speed boost here.
@@ -9640,7 +9640,7 @@ function crc32(crc, buf, len, pos) {
 
 module.exports = crc32;
 
-},{}],"s4ZB":[function(require,module,exports) {
+},{}],"fVHU":[function(require,module,exports) {
 'use strict';
 
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
@@ -9674,7 +9674,7 @@ module.exports = {
   '-6':   'incompatible version' /* Z_VERSION_ERROR (-6) */
 };
 
-},{}],"W33I":[function(require,module,exports) {
+},{}],"RMKV":[function(require,module,exports) {
 'use strict';
 
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
@@ -11550,7 +11550,7 @@ exports.deflatePrime = deflatePrime;
 exports.deflateTune = deflateTune;
 */
 
-},{"../utils/common":"E35G","./trees":"P3Np","./adler32":"kXBC","./crc32":"I79J","./messages":"s4ZB"}],"BfrP":[function(require,module,exports) {
+},{"../utils/common":"kQw7","./trees":"gg6r","./adler32":"MOI4","./crc32":"o0gx","./messages":"fVHU"}],"TIjK":[function(require,module,exports) {
 // String encode/decode helpers
 'use strict';
 
@@ -11739,7 +11739,7 @@ exports.utf8border = function (buf, max) {
   return (pos + _utf8len[buf[pos]] > max) ? pos : max;
 };
 
-},{"./common":"E35G"}],"yuGi":[function(require,module,exports) {
+},{"./common":"kQw7"}],"PzRC":[function(require,module,exports) {
 'use strict';
 
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
@@ -11788,7 +11788,7 @@ function ZStream() {
 
 module.exports = ZStream;
 
-},{}],"rZaz":[function(require,module,exports) {
+},{}],"AgJ3":[function(require,module,exports) {
 'use strict';
 
 
@@ -12190,7 +12190,7 @@ exports.deflate = deflate;
 exports.deflateRaw = deflateRaw;
 exports.gzip = gzip;
 
-},{"./zlib/deflate":"W33I","./utils/common":"E35G","./utils/strings":"BfrP","./zlib/messages":"s4ZB","./zlib/zstream":"yuGi"}],"eoMl":[function(require,module,exports) {
+},{"./zlib/deflate":"RMKV","./utils/common":"kQw7","./utils/strings":"TIjK","./zlib/messages":"fVHU","./zlib/zstream":"PzRC"}],"wVcw":[function(require,module,exports) {
 'use strict';
 
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
@@ -12537,7 +12537,7 @@ module.exports = function inflate_fast(strm, start) {
   return;
 };
 
-},{}],"ZU4n":[function(require,module,exports) {
+},{}],"ocxV":[function(require,module,exports) {
 'use strict';
 
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
@@ -12882,7 +12882,7 @@ module.exports = function inflate_table(type, lens, lens_index, codes, table, ta
   return 0;
 };
 
-},{"../utils/common":"E35G"}],"vxs3":[function(require,module,exports) {
+},{"../utils/common":"kQw7"}],"Fam0":[function(require,module,exports) {
 'use strict';
 
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
@@ -14440,7 +14440,7 @@ exports.inflateSyncPoint = inflateSyncPoint;
 exports.inflateUndermine = inflateUndermine;
 */
 
-},{"../utils/common":"E35G","./adler32":"kXBC","./crc32":"I79J","./inffast":"eoMl","./inftrees":"ZU4n"}],"RtpA":[function(require,module,exports) {
+},{"../utils/common":"kQw7","./adler32":"MOI4","./crc32":"o0gx","./inffast":"wVcw","./inftrees":"ocxV"}],"hoPV":[function(require,module,exports) {
 'use strict';
 
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
@@ -14510,7 +14510,7 @@ module.exports = {
   //Z_NULL:                 null // Use -1 or null inline, depending on var type
 };
 
-},{}],"R7Fx":[function(require,module,exports) {
+},{}],"VJx4":[function(require,module,exports) {
 'use strict';
 
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
@@ -14570,7 +14570,7 @@ function GZheader() {
 
 module.exports = GZheader;
 
-},{}],"C7JM":[function(require,module,exports) {
+},{}],"bMeT":[function(require,module,exports) {
 'use strict';
 
 
@@ -14995,7 +14995,7 @@ exports.inflate = inflate;
 exports.inflateRaw = inflateRaw;
 exports.ungzip  = inflate;
 
-},{"./zlib/inflate":"vxs3","./utils/common":"E35G","./utils/strings":"BfrP","./zlib/constants":"RtpA","./zlib/messages":"s4ZB","./zlib/zstream":"yuGi","./zlib/gzheader":"R7Fx"}],"peKv":[function(require,module,exports) {
+},{"./zlib/inflate":"Fam0","./utils/common":"kQw7","./utils/strings":"TIjK","./zlib/constants":"hoPV","./zlib/messages":"fVHU","./zlib/zstream":"PzRC","./zlib/gzheader":"VJx4"}],"t52q":[function(require,module,exports) {
 // Top level file is just a mixin of submodules & constants
 'use strict';
 
@@ -15011,7 +15011,7 @@ assign(pako, deflate, inflate, constants);
 
 module.exports = pako;
 
-},{"./lib/utils/common":"E35G","./lib/deflate":"rZaz","./lib/inflate":"C7JM","./lib/zlib/constants":"RtpA"}],"unGL":[function(require,module,exports) {
+},{"./lib/utils/common":"kQw7","./lib/deflate":"AgJ3","./lib/inflate":"bMeT","./lib/zlib/constants":"hoPV"}],"unGL":[function(require,module,exports) {
 'use strict';
 var USE_TYPEDARRAY = (typeof Uint8Array !== 'undefined') && (typeof Uint16Array !== 'undefined') && (typeof Uint32Array !== 'undefined');
 
@@ -15098,7 +15098,7 @@ exports.uncompressWorker = function () {
     return new FlateWorker("Inflate", {});
 };
 
-},{"pako":"peKv","./utils":"vV0B","./stream/GenericWorker":"HHN4"}],"Nuu4":[function(require,module,exports) {
+},{"pako":"t52q","./utils":"vV0B","./stream/GenericWorker":"HHN4"}],"Nuu4":[function(require,module,exports) {
 'use strict';
 
 var GenericWorker = require("./stream/GenericWorker");
@@ -16686,7 +16686,7 @@ ZipEntry.prototype = {
             this.extraFields = {};
         }
 
-        while (reader.index < end) {
+        while (reader.index + 4 < end) {
             extraFieldId = reader.readInt(2);
             extraFieldLength = reader.readInt(2);
             extraFieldValue = reader.readData(extraFieldLength);
@@ -16697,6 +16697,8 @@ ZipEntry.prototype = {
                 value: extraFieldValue
             };
         }
+
+        reader.setIndex(end);
     },
     /**
      * Apply an UTF8 transformation if needed.
@@ -17170,7 +17172,7 @@ JSZip.defaults = require('./defaults');
 
 // TODO find a better way to handle this version,
 // a require('package.json').version doesn't work with webpack, see #327
-JSZip.version = "3.4.0";
+JSZip.version = "3.5.0";
 
 JSZip.loadAsync = function (content, options) {
     return new JSZip().loadAsync(content, options);
@@ -17201,6 +17203,16 @@ var _namespaces = require("./namespaces.js");
 function _classPrivateFieldGet(receiver, privateMap) { var descriptor = privateMap.get(receiver); if (!descriptor) { throw new TypeError("attempted to get private field on non-instance"); } if (descriptor.get) { return descriptor.get.call(receiver); } return descriptor.value; }
 
 function _classPrivateFieldSet(receiver, privateMap, value) { var descriptor = privateMap.get(receiver); if (!descriptor) { throw new TypeError("attempted to set private field on non-instance"); } if (descriptor.set) { descriptor.set.call(receiver, value); } else { if (!descriptor.writable) { throw new TypeError("attempted to set read only private field"); } descriptor.value = value; } return value; }
+
+var _width = new WeakMap();
+
+var _height = new WeakMap();
+
+var _front = new WeakMap();
+
+var _back = new WeakMap();
+
+var _properties = new WeakMap();
 
 class CardDescription {
   constructor(frontURL, backURL, width, height, properties) {
@@ -17266,15 +17278,9 @@ class CardDescription {
 
 exports.CardDescription = CardDescription;
 
-var _width = new WeakMap();
+var _src = new WeakMap();
 
-var _height = new WeakMap();
-
-var _front = new WeakMap();
-
-var _back = new WeakMap();
-
-var _properties = new WeakMap();
+var _card = new WeakMap();
 
 class CardFaceDescription {
   constructor(src, card) {
@@ -17321,10 +17327,6 @@ class CardFaceDescription {
   }
 
 }
-
-var _src = new WeakMap();
-
-var _card = new WeakMap();
 },{"./namespaces.js":"ASQA"}],"gHo7":[function(require,module,exports) {
 "use strict";
 
@@ -17336,6 +17338,12 @@ exports.DeckDescription = void 0;
 function _classPrivateFieldGet(receiver, privateMap) { var descriptor = privateMap.get(receiver); if (!descriptor) { throw new TypeError("attempted to get private field on non-instance"); } if (descriptor.get) { return descriptor.get.call(receiver); } return descriptor.value; }
 
 function _classPrivateFieldSet(receiver, privateMap, value) { var descriptor = privateMap.get(receiver); if (!descriptor) { throw new TypeError("attempted to set private field on non-instance"); } if (descriptor.set) { descriptor.set.call(receiver, value); } else { if (!descriptor.writable) { throw new TypeError("attempted to set read only private field"); } descriptor.value = value; } return value; }
+
+var _cards = new WeakMap();
+
+var _id = new WeakMap();
+
+var _blobs = new WeakMap();
 
 class DeckDescription {
   constructor(id, cards, blobs) {
@@ -17380,12 +17388,6 @@ class DeckDescription {
 }
 
 exports.DeckDescription = DeckDescription;
-
-var _cards = new WeakMap();
-
-var _id = new WeakMap();
-
-var _blobs = new WeakMap();
 },{}],"Ld0F":[function(require,module,exports) {
 "use strict";
 
@@ -17517,4 +17519,4 @@ fileinput.addEventListener("change", evt => {
   });
 });
 },{"./namespaces.js":"ASQA","./loadDeck.js":"Ld0F"}]},{},["ckwZ"], null)
-//# sourceMappingURL=cardLoadTest.fe7e15fa.js.map
+//# sourceMappingURL=cardLoadTest.b9696e3c.js.map
