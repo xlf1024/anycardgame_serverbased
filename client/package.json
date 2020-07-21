@@ -1,0 +1,39 @@
+{
+  "name": "anycardgame_serverbased",
+  "version": "0.0.0",
+  "description": "Game-agnostic online card game table. Cards not included.",
+  "main": "\"\"",
+  "type": "module",
+  "scripts": {
+    "build": "rm -r -v client/dist/ && parcel build client/src/index.html client/src/cardLoadTest.html -d client/dist/ --public-url ./ --no-minify --log-level 4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xlf1024/anycardgame_serverbased.git"
+  },
+  "author": "xlf1024",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/xlf1024/anycardgame_serverbased/issues"
+  },
+  "homepage": "https://github.com/xlf1024/anycardgame_serverbased#readme",
+  "devDependencies": {
+    "@babel/core": "^7.10.5",
+    "@babel/plugin-proposal-class-properties": "^7.10.4",
+    "@babel/plugin-proposal-optional-chaining": "^7.10.4",
+    "@babel/plugin-proposal-private-methods": "^7.10.4",
+    "@egjs/hammerjs": "git+https://github.com/xlf1024/hammer.js.git",
+    "parcel": "^1.12.4"
+  },
+  "dependencies": {
+    "argr": "^1.2.2",
+    "jszip": "^3.5.0",
+    "node-static": "^0.7.11",
+    "papaparse": "^5.2.0",
+    "uuid": "^8.2.0",
+    "ws": "^7.3.1"
+  },
+  "browserslist": [
+    "last 1 Firefox versions"
+  ]
+}
